@@ -54,7 +54,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-home"
-                                color={color}
+                                color={'#fff'}
                                 size={size}
                                 />
                             )}
@@ -64,7 +64,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-book"
-                                color={color}
+                                color={'#fff'}
                                 size={size}
                                 />
                             )}
@@ -74,7 +74,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-stats"
-                                color={color}
+                                color={'#fff'}
                                 size={size}
                                 />
                             )}
@@ -84,7 +84,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-person"
-                                color={color}
+                                color={'#fff'}
                                 size={size}
                                 />
                             )}
@@ -94,7 +94,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-settings"
-                                color={color}
+                                color={'#fff'}
                                 size={size}
                                 />
                             )}
@@ -118,7 +118,7 @@ export function DrawerContent(props) {
                 <DrawerItem
                     icon={((color, size) =>
                         <Icon name="ios-exit"
-                        color={color}
+                        color={'#fff'}
                         size={size}
                         />
                     )}
