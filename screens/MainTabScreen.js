@@ -42,7 +42,7 @@ const MainTabScreen = () => (
         options={{
           tabBarLabel: 'Scan',
           tabBarIcon: ({ color }) => (
-            <Ionicons name="ios-settings" color={color} size={26} />
+            <Ionicons name="md-qr-scanner" color={color} size={26} />
           ),
         }}
       />
