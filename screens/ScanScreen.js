@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import { Button, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler} from 'react-native';
+import { Button, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import { color } from 'react-native-reanimated';
+import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 // TODO: disable swipe right menu in this window
 
@@ -12,11 +14,16 @@ export default class App extends React.Component {
         showModal: false,
         uri: null,
         isLoading: true,
+        selectingShop: false,
+        shop: '',
+        selectedItem: null
     }
 
     componentDidMount(){
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             // everytime user opens this tab open camera
+            this.setState({isLoading:true})
+            this.setState({selectingShop: false})
             this._pickCameraImage.call();
           });
     }
@@ -33,21 +40,75 @@ export default class App extends React.Component {
             const result = await ImagePicker.launchCameraAsync()
 
             if (!result.cancelled) {
-                // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products               
+                // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
+                // set state to picking shop and pre-selected shop to scanned shop       
                 this.setState({
                     uri: result.uri,
-                }, () => this.setState({ showModal: true }))
+                    selectingShop: true
+                    //selectedItem = scannedShop id
+                })     
+                /*this.setState({
+                    uri: result.uri,
+                }, () => this.setState({ showModal: true }))*/
             }else{
                 this.props.navigation.goBack();
             }
         }
     };
 
+
+
+    
+
     render() {
-        const { uri, showModal } = this.state
-        const { width, height } = Dimensions.get('window')
+        const { uri, showModal } = this.state;
+        const { width, height } = Dimensions.get('window');
         const { navigation } = this.props;
-        if(this.state.isLoading){
+        
+        if(this.state.selectingShop){
+            return(
+                <View style={styles.container}>
+                    <View style={styles.body}>
+                        <View style={{alignItems: 'center', justifyContent: 'center', marginTop:30}}>
+                            <Text style={styles.titleText}>Please select the shop</Text>
+                        </View>
+                        
+                        <View style={{marginTop:40}}>
+                            <FlatList
+                            extraData={this.state}
+                            data={[
+                                {key: 'IKI', id:1},
+                                {key: 'MAXIMA', id:2},
+                                {key: 'LIDL', id:3},
+                                {key: 'NORFA', id:4},
+                                {key: 'RIMI', id:5}
+                            ]}
+                            renderItem={({item}) => (
+                                <TouchableOpacity onPress={() => {
+                                    this.setState({ selectedItem: item.id })
+                                    }}>
+                                    <Text 
+                                    style={this.state.selectedItem === item.id ? styles.selectedItem : styles.item}
+                                    >{item.key}</Text>
+                                </TouchableOpacity>
+                            )}
+                            />
+                        </View>
+                        
+                        <View style={styles.buttonOnBot}>
+                            <TouchableOpacity style={{width:'100%'}}>
+                                <View style={styles.btnStyle}>
+                                    <Text style = {{color: 'white'}}>Confirm</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                        
+                    </View>
+                </View>
+                
+            )
+        }
+        else if(this.state.isLoading){
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
@@ -55,29 +116,15 @@ export default class App extends React.Component {
                     </View>
                 </View>
             )
-        }else{
+        }
+        else{
             return (
-                <SafeAreaView style={{backgroundColor: 'white', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flex: 1}}>                
-                    <View style={{width: width, flex: 0.5, alignItems: 'center', justifyContent: 'center'}}>
-                        {uri ? (
-                            <Image resizeMode="contain"
-                                style={{
-                                    width: '80%', height: '100%', marginBottom: 0, backgroundColor: '#fcfcfc',
-                                }}
-                                source={{ uri }}
-                            />
-                        ) : 
-                        <Image resizeMode={'contain'} source={require('../assets/icon.png')} style={{alignSelf: 'center', width: '80%', height: '100%'}} />
-                        }
+                <View style={styles.container}>                
+                    <View style={styles.body}>
+                        <Image source={{uri}} style={styles.scannedImg}>
+
+                        </Image>
                     </View>
-                    <TouchableOpacity onPress={() => this._pickImage()} style={{marginTop: 20, width: 200, borderRadius: 10, height: 60, backgroundColor: 'green', justifyContent: 'center', alignItems: 'center'}}>
-                        <Icon size={30} name="photo" color="white" />
-                        <Text style={{ color: 'white', fontSize: 18 }}>Galery</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => this._pickCameraImage()} style={{marginTop: 20, borderRadius: 10, width: 200, height: 60, backgroundColor: 'green', justifyContent: 'center', alignItems: 'center'}}>
-                        <Icon size={30} name="photo-camera" color="white" />
-                        <Text style={{ color: 'white', fontSize: 18 }}>Photo</Text>
-                    </TouchableOpacity>
                     {
                         uri
                     && (
@@ -97,7 +144,7 @@ export default class App extends React.Component {
                         />
                     )
                     }
-                </SafeAreaView>
+                </View>
             )
         }
         
@@ -133,8 +180,12 @@ const styles = StyleSheet.create({
         borderColor: '#000'
     },
     buttonOnBot:{
-        justifyContent: 'flex-end',
-        marginBottom: 25
+        position: 'absolute',
+        bottom: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
+        
     },
     btnStyle:{
         backgroundColor: '#1c1c1c',
@@ -148,7 +199,22 @@ const styles = StyleSheet.create({
     scannedImg:{
         flex:1,
         resizeMode:"contain"
-    }
+    },
+    titleText:{
+        fontSize: 20
+    },
+    item: {
+        backgroundColor: '#e4e8f0',
+        padding: 20,
+        marginVertical: 8,
+        marginHorizontal: 16,
+      },
+    selectedItem: {
+    backgroundColor: '#c4fabe',
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    },
 });
 
 
