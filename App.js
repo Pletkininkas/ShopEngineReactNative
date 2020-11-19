@@ -111,9 +111,9 @@ const App = () => {
   }
   return (
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer>
+      <NavigationContainer hideStatusBar={false}>
         { loginState.userToken != null ? (
-          <Drawer.Navigator hideStatusBar={true} drawerContent={props => <DrawerContent {...props} />}>
+          <Drawer.Navigator hideStatusBar={false} drawerContent={props => <DrawerContent {...props} />}>
             <Drawer.Screen hideStatusBar={true} name="HomeDrawer" component={MainTabScreen} />
             <Drawer.Screen hideStatusBar={true} name="ShoppingHistory" component={ShoppingHistoryScreen} />
             <Drawer.Screen hideStatusBar={true} name="Statistics" component={StatisticsScreen} />
@@ -122,7 +122,7 @@ const App = () => {
         </Drawer.Navigator>
         )
       :
-        <RootStackScreen />
+        <RootStackScreen  hideStatusBar={true}/>
       }
       </NavigationContainer>
     </AuthContext.Provider>
