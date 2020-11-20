@@ -1,10 +1,14 @@
 import React from 'react';
 import { Button, View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 const NewListScreen = ({ navigation }) => {
+
+    const theme = useTheme();
+
     return (
         <View style={styles.container}>
-            <View style={styles.body}>
+            <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
             </View>
         </View>
     );
@@ -30,7 +34,7 @@ const styles = StyleSheet.create({
         flex: 0,
         flexGrow: 1,
         flexDirection: "column",
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         height: '95%',
         width: '95%',
         marginTop: 10,
