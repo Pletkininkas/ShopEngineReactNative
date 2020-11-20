@@ -11,8 +11,10 @@ import {
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useTheme } from '@react-navigation/native';
 
 const SplashScreen = ({ navigation }) => {
+    const { colors } = useTheme();
     return (
         <View style={styles.container}>
             <StatusBar hidden={true} />
@@ -36,13 +38,19 @@ const SplashScreen = ({ navigation }) => {
                 />
             </View>
             <Animatable.View
-                style={styles.footer}
+                  style={[styles.footer, {
+                    backgroundColor: colors.background
+                }]}
                 animation="fadeInUpBig"
                 delay={500}
                 duration={1000}
             >
-                <Text style={styles.title}>Follow up your shopping habits and save up!</Text>
-                <Text style={styles.text}>Sign in with account</Text>
+                <Text style={[styles.title, {
+                color: colors.text
+            }]}>Follow up your shopping habits and save up!</Text>
+                <Text sstyle={[styles.title, {
+                color: colors.text
+            }]}>Sign in with account</Text>
                 <View style={styles.button}>
                     <TouchableOpacity onPress={() => navigation.navigate('SignInScreen')}>
                         <LinearGradient

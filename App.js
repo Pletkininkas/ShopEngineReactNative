@@ -1,7 +1,18 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { 
+  NavigationContainer, 
+  DefaultTheme as NavigationDefaultTheme,
+  DarkTheme as NavigationDarkTheme
+} from '@react-navigation/native';
+
 import { createDrawerNavigator } from '@react-navigation/drawer';
+
+import { 
+  Provider as PaperProvider, 
+  DefaultTheme as PaperDefaultTheme,
+  DarkTheme as PaperDarkTheme 
+} from 'react-native-paper';
 
 import { DrawerContent } from './screens/DrawerContent';
 
@@ -20,12 +31,37 @@ import AsyncStorage from '@react-native-community/async-storage'
 const Drawer = createDrawerNavigator();
 
 const App = () => {
+  const [isDarkTheme, setIsDarkTheme] = React.useState(false);
 
   const initialLoginState = {
     isLoading: true,
     userName: null,
     userToken: null,
   };
+
+  const CustomDefaultTheme = {
+    ...NavigationDefaultTheme,
+    ...PaperDefaultTheme,
+    colors: {
+      ...NavigationDefaultTheme.colors,
+      ...PaperDefaultTheme.colors,
+      background: '#ffffff',
+      text: '#333333'
+    }
+  }
+
+  const CustomDarkTheme = {
+    ...NavigationDarkTheme,
+    ...PaperDarkTheme,
+    colors: {
+      ...NavigationDarkTheme.colors,
+      ...PaperDarkTheme.colors,
+      background: '#333333',
+      text: '#ffffff'
+    }
+  }
+
+  const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
 
   const loginReducer = (prevState, action) => {
     switch( action.type ) {
@@ -86,6 +122,10 @@ const App = () => {
     signUp: () => {
       
     },
+        
+    toggleTheme: () => {
+      setIsDarkTheme( isDarkTheme => !isDarkTheme );
+    }
   }), []);
 
   // Check if user is logged in
@@ -110,8 +150,9 @@ const App = () => {
     );
   }
   return (
+    <PaperProvider theme={theme}>
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer hideStatusBar={false}>
+      <NavigationContainer hideStatusBar={false} theme={theme}>
         { loginState.userToken != null ? (
           <Drawer.Navigator hideStatusBar={false} drawerContent={props => <DrawerContent {...props} />}>
             <Drawer.Screen hideStatusBar={true} name="HomeDrawer" component={MainTabScreen} />
@@ -126,6 +167,7 @@ const App = () => {
       }
       </NavigationContainer>
     </AuthContext.Provider>
+    </PaperProvider>
   );
 }
 

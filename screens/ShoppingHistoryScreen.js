@@ -2,15 +2,19 @@ import React from 'react';
 import { Button, View, Text, StyleSheet } from 'react-native';
 import { color } from 'react-native-reanimated';
 import { Header } from 'react-navigation';
+import { useTheme } from '@react-navigation/native';
 
 const ShoppingHistoryScreen = () => {
+
+    const theme = useTheme();
+
     return (
       <View style={styles.container}>
           <View>
                 <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Shopping History</Text>
           </View>
-          <View style={styles.body}>
-              <Text>Shopping History Screen</Text>
+          <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff' }>
+              
             </View>
       </View>
     );
@@ -39,7 +43,7 @@ const styles = StyleSheet.create({
         flex: 0,
         flexGrow: 1,
         flexDirection: "column",
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         height: '95%',
         width: '95%',
         marginTop: 10,
