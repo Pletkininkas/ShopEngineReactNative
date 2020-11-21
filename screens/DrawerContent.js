@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import {
     useTheme,
     Title,
@@ -128,7 +128,12 @@ export function DrawerContent(props) {
                         />
                     )}
                     label="Sign Out"
-                    onPress={() => {signOut()}}
+                    onPress={() => {
+                        Alert.alert("Sign Out", "Are you sure you want to sign out?",  [
+                            {text: "Yes", onPress: () => signOut()},   
+                            {text: "No", style: 'cancel'}                                                 
+                        ])
+                    }}
                 />
             </Drawer.Section>
         </View>
