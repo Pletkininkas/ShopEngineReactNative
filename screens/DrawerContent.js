@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
+    useTheme,
     Title,
     Caption,
     Paragraph,
@@ -9,19 +10,23 @@ import {
     TouchableRipple,
     Switch 
 } from 'react-native-paper';
+
 import {
     DrawerContentScrollView,
     DrawerItem
 } from '@react-navigation/drawer';
+
 import Icon from 'react-native-vector-icons/Ionicons';
+
+import { AuthContext } from '../components/context';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { color } from 'react-native-reanimated';
 
 export function DrawerContent(props) {
 
-    const [isDarkTheme, setIsDarkTheme] = React.useState(false);
+    const paperTheme = useTheme();
 
-    const toggleTheme = () => {
-        setIsDarkTheme(!isDarkTheme);
-    }
+    const { signOut, toggleTheme } = React.useContext(AuthContext);
 
     return (
         <View style={{flex:1}}>
@@ -31,8 +36,8 @@ export function DrawerContent(props) {
                         <View style={{flexDirection: 'row', marginTop: 15}}>
                             <Icon
                             name="ios-person"
-                            size={75}
-                            />
+                            size={75}                            
+                            color={'#fff'}/>
                             <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                                 <Title style={styles.title}>Name Surname</Title>
                                 <Caption style={styles.caption}>username</Caption>
@@ -54,7 +59,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-home"
-                                color={'#fff'}
+                                color={color}
                                 size={size}
                                 />
                             )}
@@ -64,7 +69,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-book"
-                                color={'#fff'}
+                                color={color}
                                 size={size}
                                 />
                             )}
@@ -74,7 +79,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-stats"
-                                color={'#fff'}
+                                color={color}
                                 size={size}
                                 />
                             )}
@@ -84,7 +89,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-person"
-                                color={'#fff'}
+                                color={color}
                                 size={size}
                                 />
                             )}
@@ -94,7 +99,7 @@ export function DrawerContent(props) {
                         <DrawerItem
                             icon={({color, size}) => (
                                 <Icon name="ios-settings"
-                                color={'#fff'}
+                                color={color}
                                 size={size}
                                 />
                             )}
@@ -107,7 +112,7 @@ export function DrawerContent(props) {
                             <View style={styles.preferences}>
                                 <Text>Dark Theme</Text>
                                 <View pointerEvents="none">
-                                    <Switch value={isDarkTheme} trackColor={{true: '#1db954', false: 'grey'}} thumbColor='#1db954'/>
+                                <Switch value={paperTheme.dark}/>
                                 </View>
                             </View>
                         </TouchableRipple>
@@ -116,14 +121,14 @@ export function DrawerContent(props) {
             </DrawerContentScrollView>
             <Drawer.Section style={styles.bottomDrawerSection}>
                 <DrawerItem
-                    icon={((color, size) =>
+                    icon={({color, size}) => (
                         <Icon name="ios-exit"
-                        color={'#fff'}
+                        color={color}
                         size={size}
                         />
                     )}
                     label="Sign Out"
-                    onPress={() => {}}
+                    onPress={() => {signOut()}}
                 />
             </Drawer.Section>
         </View>

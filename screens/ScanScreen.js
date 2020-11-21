@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
+import { useTheme } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
@@ -7,9 +8,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import { color } from 'react-native-reanimated';
 import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
+
 // TODO: disable swipe right menu in this window
 
-export default class App extends React.Component {
+
+export default class ScanScreen extends React.Component {
     state = {
         showModal: false,
         uri: null,
@@ -68,6 +71,7 @@ export default class App extends React.Component {
             selectingShop: false,
         }, () => this.setState({ showModal: true }))
     }
+
 
     _readImage(data){
         this.setState({
@@ -317,7 +321,7 @@ const styles = StyleSheet.create({
         flex: 0,
         flexGrow: 1,
         flexDirection: "column",
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         height: '95%',
         width: '95%',
         marginTop: 10,
@@ -399,6 +403,7 @@ const styles = StyleSheet.create({
 
     if (!result.cancelled) {
       setImage(result.uri);
+
     }
   };
 
