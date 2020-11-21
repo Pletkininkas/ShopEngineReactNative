@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Button, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import { useTheme, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
@@ -12,195 +12,185 @@ import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gestu
 // TODO: disable swipe right menu in this window
 
 
-export default class ScanScreen extends React.Component {
-    state = {
-        showModal: false,
-        uri: null,
-        isLoading: true,
-        loadingMsg: 'Please wait...',
-        selectingShop: false,
-        shop: '',
-        selectedItem: null,
-        scannedList: []
-    }
+const ScanScreen = ({ navigation }) => {
+    const[showModal, setShowModal] = useState(false)
+    const[uri, setUri] = useState(null)
+    const[isLoading, setIsLoading] = useState(true)
+    const[loadingMsg, setLoadingMsg] = useState('Please wait')
+    const[selectingShop, setSelectingShop] = useState(false)
+    const[shop, setShop] = useState('')
+    const[selectedItem, setSelectedItem] = useState(null)
+    const[scannedList, setScannedList] = useState([])
+    const[showList, setShowList] = useState(false);
 
-    componentDidMount(){
-        this._unsubscribe = this.props.navigation.addListener('focus', () => {
-            // everytime user opens this tab open camera
-            this.setState({
-                isLoading: true,
-                selectingShop: false,
-                loadingMsg: 'Please wait...',
-            })
-            this._pickCameraImage.call();
-          });
-    }
+    const theme = useTheme();
 
-    componentWillUnmount() {
-        this._unsubscribe();
-      }
+     useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            setShowList(false)
+            setIsLoading(true)
+            setSelectingShop(false)
+            setLoadingMsg('Please wait')
+            setSelectedItem(null)
+            _pickCameraImage.call();
+        });
+
+        return unsubscribe;
+    }, [navigation]);
 
 
-
-    _pickCameraImage = async () => {
+    const _pickCameraImage = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA)
         if (status === 'granted') {
             const result = await ImagePicker.launchCameraAsync()
 
             if (!result.cancelled) {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
-                // set state to picking shop and pre-selected shop to scanned shop       
-                this.setState({
-                    uri: result.uri,
-                    selectingShop: true
+                // set state to picking shop and pre-selected shop to scanned shop 
+                setUri(result.uri)
+                setSelectingShop(true)      
                     
                     //selectedItem = scannedShop id
-                })     
+                     
                 /*this.setState({
                     uri: result.uri,
                 }, () => this.setState({ showModal: true }))*/
             }else{
-                this.props.navigation.goBack();
+                navigation.goBack();
             }
         }
     };
 
-    _onShopConfirmPress()
+    const _onShopConfirmPress = () =>
     {
-        this.setState({
-            selectingShop: false,
-        }, () => this.setState({ showModal: true }))
+        setSelectingShop(false)
+        setShowModal(true)
     }
 
 
-    _readImage(data){
-        this.setState({
-             uri: data.uri,
-             loadingMsg: 'Reading image...',
-             showList: true,
-            scannedList: [
+    const _readImage = (data) =>{
+        setUri(data.uri)
+        setLoadingMsg('Reading image...')
+        setShowList(true);
+        setScannedList([
+            {
+                name: 'Obuoliai',
+                price: 2.58,
+                discount: -0.36
+                },
                 {
-                    name: 'Obuoliai',
-                    price: 2.58,
-                    discount: -0.36
-                    },
-                    {
-                    name: 'Bananai',
-                    price: 0.99,
-                    discount: -0.21
-                    },
-                    {
-                        name: 'Dvaro pienas 15%',
-                        price: 2.49,
-                        discount: null
-                    },
-                    {
-                        name: 'Vilniaus duona juoda',
-                        price: 0.59,
-                        discount: null
-                    },
-                    {
-                        name: 'Ananasas',
-                        price: 3.39,
-                        discount: null
-                    },
-                    {
-                        name: 'Šokoladas MILKA',
-                        price: 2.99,
-                        discount: -0.17
-                    },
-                    {
-                    name: 'Obuoliai',
-                    price: 2.58,
-                    discount: -0.36
-                    },
-                    {
-                    name: 'Bananai',
-                    price: 0.99,
-                    discount: -0.21
-                    },
-                    {
-                        name: 'Dvaro pienas 15%',
-                        price: 2.49,
-                        discount: null
-                    },
-                    {
-                        name: 'Vilniaus duona juoda',
-                        price: 0.59,
-                        discount: null
-                    },
-                    {
-                        name: 'Ananasas',
-                        price: 3.39,
-                        discount: null
-                    },
-                    {
-                        name: 'Šokoladas MILKA',
-                        price: 2.99,
-                        discount: -0.17
-                    },
-                    {
-                    name: 'Obuoliai',
-                    price: 2.58,
-                    discount: -0.36
-                    },
-                    {
-                    name: 'Bananai',
-                    price: 0.99,
-                    discount: -0.21
-                    },
-                    {
-                        name: 'Dvaro pienas 15%',
-                        price: 2.49,
-                        discount: null
-                    },
-                    {
-                        name: 'Vilniaus duona juoda',
-                        price: 0.59,
-                        discount: null
-                    },
-                    {
-                        name: 'Ananasas',
-                        price: 3.39,
-                        discount: null
-                    },
-                    {
-                        name: 'Šokoladas MILKA',
-                        price: 2.99,
-                        discount: -0.17
-                    },
-            ],
-        })
+                name: 'Bananai',
+                price: 0.99,
+                discount: -0.21
+                },
+                {
+                    name: 'Dvaro pienas 15%',
+                    price: 2.49,
+                    discount: null
+                },
+                {
+                    name: 'Vilniaus duona juoda',
+                    price: 0.59,
+                    discount: null
+                },
+                {
+                    name: 'Ananasas',
+                    price: 3.39,
+                    discount: null
+                },
+                {
+                    name: 'Šokoladas MILKA',
+                    price: 2.99,
+                    discount: -0.17
+                },
+                {
+                name: 'Obuoliai',
+                price: 2.58,
+                discount: -0.36
+                },
+                {
+                name: 'Bananai',
+                price: 0.99,
+                discount: -0.21
+                },
+                {
+                    name: 'Dvaro pienas 15%',
+                    price: 2.49,
+                    discount: null
+                },
+                {
+                    name: 'Vilniaus duona juoda',
+                    price: 0.59,
+                    discount: null
+                },
+                {
+                    name: 'Ananasas',
+                    price: 3.39,
+                    discount: null
+                },
+                {
+                    name: 'Šokoladas MILKA',
+                    price: 2.99,
+                    discount: -0.17
+                },
+                {
+                name: 'Obuoliai',
+                price: 2.58,
+                discount: -0.36
+                },
+                {
+                name: 'Bananai',
+                price: 0.99,
+                discount: -0.21
+                },
+                {
+                    name: 'Dvaro pienas 15%',
+                    price: 2.49,
+                    discount: null
+                },
+                {
+                    name: 'Vilniaus duona juoda',
+                    price: 0.59,
+                    discount: null
+                },
+                {
+                    name: 'Ananasas',
+                    price: 3.39,
+                    discount: null
+                },
+                {
+                    name: 'Šokoladas MILKA',
+                    price: 2.99,
+                    discount: -0.17
+                },
+        ])
+
         // fetch data from api
         
     }
 
-    _onListConfirmPress()
+    const _onListConfirmPress = () =>
     {
         // save the products to history and compare them to other shops
-        this.setState({
-            showList: false,
-            loadingMsg: 'Comparing prices...',
-       })
+        setShowList(false)
+        setLoadingMsg('Comparing prices...')
     }
 
-    render() {
-        const { uri, showModal } = this.state;
+        //const { uri, showModal } = this.state;
         const { width, height } = Dimensions.get('window');
-        const { navigation } = this.props;
-        
+        //const { navigation } = this.props;
 
-        if(this.state.selectingShop){
+        if(selectingShop){
             return(
                 <View style={styles.container}>
-                    <View style={styles.body}>
+                    <View style={styles.body}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                         <View style={{alignItems: 'center', justifyContent: 'center', marginTop:30}}>
                             <Text style={styles.titleText}>Please select the shop</Text>
                         </View>
                         
                         <View style={{marginTop:40}}>
                             <FlatList
-                            extraData={this.state}
+                           // extraData={state}
                             data={[
                                 {key: 'IKI', id:1},
                                 {key: 'MAXIMA', id:2},
@@ -210,10 +200,10 @@ export default class ScanScreen extends React.Component {
                             ]}
                             renderItem={({item}) => (
                                 <TouchableOpacity onPress={() => {
-                                    this.setState({ selectedItem: item.id })
+                                    setSelectedItem(item.id)
                                     }}>
                                     <Text 
-                                    style={this.state.selectedItem === item.id ? styles.selectedItem : styles.item}
+                                    style={selectedItem === item.id ? styles.selectedItem : styles.item}
                                     >{item.key}</Text>
                                 </TouchableOpacity>
                             )}
@@ -221,7 +211,7 @@ export default class ScanScreen extends React.Component {
                         </View>
                         
                         <View style={styles.buttonOnBot}>
-                            <TouchableOpacity style={{width:'100%'}} onPress={() => this._onShopConfirmPress()}>
+                            <TouchableOpacity style={{width:'100%'}} onPress={() => _onShopConfirmPress()}>
                                 <View style={styles.btnStyle}>
                                     <Text style = {{color: 'white'}}>Confirm</Text>
                                 </View>
@@ -233,12 +223,12 @@ export default class ScanScreen extends React.Component {
                 
             )
         }
-        else if(this.state.showModal){
+        else if(showModal){
             return (
                 <View style={styles.container}>
-                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                         <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
-                        <Text> {this.state.loadingMsg} </Text>
+                        <Text style={{color:'green'}}> {loadingMsg} </Text>
                     </View>           
                     {
                         uri
@@ -246,8 +236,8 @@ export default class ScanScreen extends React.Component {
                         <ExpoImageManipulator
                             photo={{ uri }}
                             isVisible={showModal}
-                            onPictureChoosed={(data) => this._readImage(data)}
-                            onToggleModal={() => this.setState({ showModal: !showModal })}
+                            onPictureChoosed={(data) => _readImage(data)}
+                            onToggleModal={() => setShowModal(!showModal)}
                             saveOptions={{
                                 compress: 1,
                                 format: 'png',
@@ -260,13 +250,13 @@ export default class ScanScreen extends React.Component {
                 </View>
             )
         }
-        else if(this.state.showList){
+        else if(showList){
             return (
                 <View style={styles.container}>
-                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                     <FlatList style={{width:'100%', marginBottom:80}}
-                        extraData={this.state}
-                        data={this.state.scannedList}
+                       // extraData={state}
+                        data={scannedList}
                         renderItem={({item}) => (
                             <View style={styles.productItem}>
                                 <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
@@ -277,7 +267,7 @@ export default class ScanScreen extends React.Component {
                         />
                     </View>
                     <View style={styles.buttonOnBot}>
-                            <TouchableOpacity style={{width:'95%'}} onPress={() => this._onListConfirmPress()}>
+                            <TouchableOpacity style={{width:'95%'}} onPress={() => _onListConfirmPress()}>
                                 <View style={styles.btnStyle}>
                                     <Text style = {{color: 'white'}}>Confirm</Text>
                                 </View>
@@ -290,18 +280,18 @@ export default class ScanScreen extends React.Component {
         else{
             return(
                 <View style={styles.container}>
-                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                         <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
-                        <Text> {this.state.loadingMsg} </Text>
+                        <Text style={{color:'green'}}> {loadingMsg} </Text>
                     </View>
                 </View>
             )
         }
         
     }
-}
 
-//export default ScanScreen;
+
+export default ScanScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -338,7 +328,7 @@ const styles = StyleSheet.create({
         
     },
     btnStyle:{
-        backgroundColor: '#1c1c1c',
+        backgroundColor: '#1db954',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 15,
@@ -351,73 +341,30 @@ const styles = StyleSheet.create({
         resizeMode:"contain"
     },
     titleText:{
-        fontSize: 20
+        fontSize: 20,
+        color:'#1db954'
     },
     item: {
-        backgroundColor: '#e4e8f0',
+        backgroundColor: '#1db954',
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
+        borderRadius: 10
       },
     selectedItem: {
-        backgroundColor: '#c4fabe',
+        backgroundColor: '#0a421e',
         padding: 20,
         marginVertical: 8,
         marginHorizontal: 16,
+        borderRadius: 10
     },
     productItem:{
         flex:1,
         flexDirection:'row',
-        backgroundColor: '#e4e8f0',
+        backgroundColor: '#dce0dd',
         padding: 20,
         marginVertical: 4,
         marginHorizontal: 16,
+        borderRadius: 10
     }
 });
-
-
-/*    const [image, setImage] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== 'web') {
-        const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
-        if (status !== 'granted') {
-          alert('Sorry, we need camera roll permissions to make this work!');
-        }
-      }
-    })();
-  }, []);
-
-  const takeImage = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-      
-    });
-
-    
-
-    console.log(result);
-
-    if (!result.cancelled) {
-      setImage(result.uri);
-
-    }
-  };
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.body}>
-                {image && <Image source={{ uri: image}} style={styles.scannedImg} />}
-                <View style={[styles.buttonOnBot, styles.buttonStyle]}>
-                    <TouchableOpacity onPress = {takeImage}>
-                        <View style={styles.btnStyle}>
-                            <Text style = {{color: 'white'}}>Scan Receipt</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
-    );*/
