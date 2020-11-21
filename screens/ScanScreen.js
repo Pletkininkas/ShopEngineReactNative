@@ -14,16 +14,21 @@ export default class App extends React.Component {
         showModal: false,
         uri: null,
         isLoading: true,
+        loadingMsg: 'Please wait...',
         selectingShop: false,
         shop: '',
-        selectedItem: null
+        selectedItem: null,
+        scannedList: []
     }
 
     componentDidMount(){
         this._unsubscribe = this.props.navigation.addListener('focus', () => {
             // everytime user opens this tab open camera
-            this.setState({isLoading:true})
-            this.setState({selectingShop: false})
+            this.setState({
+                isLoading: true,
+                selectingShop: false,
+                loadingMsg: 'Please wait...',
+            })
             this._pickCameraImage.call();
           });
     }
@@ -45,6 +50,7 @@ export default class App extends React.Component {
                 this.setState({
                     uri: result.uri,
                     selectingShop: true
+                    
                     //selectedItem = scannedShop id
                 })     
                 /*this.setState({
@@ -56,15 +62,130 @@ export default class App extends React.Component {
         }
     };
 
+    _onShopConfirmPress()
+    {
+        this.setState({
+            selectingShop: false,
+        }, () => this.setState({ showModal: true }))
+    }
 
+    _readImage(data){
+        this.setState({
+             uri: data.uri,
+             loadingMsg: 'Reading image...',
+             showList: true,
+            scannedList: [
+                {
+                    name: 'Obuoliai',
+                    price: 2.58,
+                    discount: -0.36
+                    },
+                    {
+                    name: 'Bananai',
+                    price: 0.99,
+                    discount: -0.21
+                    },
+                    {
+                        name: 'Dvaro pienas 15%',
+                        price: 2.49,
+                        discount: null
+                    },
+                    {
+                        name: 'Vilniaus duona juoda',
+                        price: 0.59,
+                        discount: null
+                    },
+                    {
+                        name: 'Ananasas',
+                        price: 3.39,
+                        discount: null
+                    },
+                    {
+                        name: 'Šokoladas MILKA',
+                        price: 2.99,
+                        discount: -0.17
+                    },
+                    {
+                    name: 'Obuoliai',
+                    price: 2.58,
+                    discount: -0.36
+                    },
+                    {
+                    name: 'Bananai',
+                    price: 0.99,
+                    discount: -0.21
+                    },
+                    {
+                        name: 'Dvaro pienas 15%',
+                        price: 2.49,
+                        discount: null
+                    },
+                    {
+                        name: 'Vilniaus duona juoda',
+                        price: 0.59,
+                        discount: null
+                    },
+                    {
+                        name: 'Ananasas',
+                        price: 3.39,
+                        discount: null
+                    },
+                    {
+                        name: 'Šokoladas MILKA',
+                        price: 2.99,
+                        discount: -0.17
+                    },
+                    {
+                    name: 'Obuoliai',
+                    price: 2.58,
+                    discount: -0.36
+                    },
+                    {
+                    name: 'Bananai',
+                    price: 0.99,
+                    discount: -0.21
+                    },
+                    {
+                        name: 'Dvaro pienas 15%',
+                        price: 2.49,
+                        discount: null
+                    },
+                    {
+                        name: 'Vilniaus duona juoda',
+                        price: 0.59,
+                        discount: null
+                    },
+                    {
+                        name: 'Ananasas',
+                        price: 3.39,
+                        discount: null
+                    },
+                    {
+                        name: 'Šokoladas MILKA',
+                        price: 2.99,
+                        discount: -0.17
+                    },
+            ],
+        })
+        // fetch data from api
+        
+    }
 
-    
+    _onListConfirmPress()
+    {
+        // save the products to history and compare them to other shops
+        this.setState({
+            showList: false,
+            loadingMsg: 'Comparing prices...',
+       })
+    }
 
     render() {
         const { uri, showModal } = this.state;
         const { width, height } = Dimensions.get('window');
         const { navigation } = this.props;
         
+
         if(this.state.selectingShop){
             return(
                 <View style={styles.container}>
@@ -96,7 +217,7 @@ export default class App extends React.Component {
                         </View>
                         
                         <View style={styles.buttonOnBot}>
-                            <TouchableOpacity style={{width:'100%'}}>
+                            <TouchableOpacity style={{width:'100%'}} onPress={() => this._onShopConfirmPress()}>
                                 <View style={styles.btnStyle}>
                                     <Text style = {{color: 'white'}}>Confirm</Text>
                                 </View>
@@ -108,32 +229,20 @@ export default class App extends React.Component {
                 
             )
         }
-        else if(this.state.isLoading){
-            return(
+        else if(this.state.showModal){
+            return (
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
                         <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
-                    </View>
-                </View>
-            )
-        }
-        else{
-            return (
-                <View style={styles.container}>                
-                    <View style={styles.body}>
-                        <Image source={{uri}} style={styles.scannedImg}>
-
-                        </Image>
-                    </View>
+                        <Text> {this.state.loadingMsg} </Text>
+                    </View>           
                     {
                         uri
                     && (
                         <ExpoImageManipulator
                             photo={{ uri }}
                             isVisible={showModal}
-                            onPictureChoosed={(data) => {
-                                this.setState({ uri: data.uri })
-                            }}
+                            onPictureChoosed={(data) => this._readImage(data)}
                             onToggleModal={() => this.setState({ showModal: !showModal })}
                             saveOptions={{
                                 compress: 1,
@@ -144,6 +253,43 @@ export default class App extends React.Component {
                         />
                     )
                     }
+                </View>
+            )
+        }
+        else if(this.state.showList){
+            return (
+                <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
+                    <FlatList style={{width:'100%', marginBottom:80}}
+                        extraData={this.state}
+                        data={this.state.scannedList}
+                        renderItem={({item}) => (
+                            <View style={styles.productItem}>
+                                <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
+                                <Text style={{marginLeft:'auto', flex:2}}>{item.price}</Text>
+                                <Text style={{marginLeft:'auto', color:'green', flex:1}}>{item.discount}</Text>
+                            </View>
+                        )}
+                        />
+                    </View>
+                    <View style={styles.buttonOnBot}>
+                            <TouchableOpacity style={{width:'95%'}} onPress={() => this._onListConfirmPress()}>
+                                <View style={styles.btnStyle}>
+                                    <Text style = {{color: 'white'}}>Confirm</Text>
+                                </View>
+                            </TouchableOpacity>
+                    </View>
+                </View>
+                
+            )
+        }
+        else{
+            return(
+                <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}>
+                        <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
+                        <Text> {this.state.loadingMsg} </Text>
+                    </View>
                 </View>
             )
         }
@@ -210,11 +356,19 @@ const styles = StyleSheet.create({
         marginHorizontal: 16,
       },
     selectedItem: {
-    backgroundColor: '#c4fabe',
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
+        backgroundColor: '#c4fabe',
+        padding: 20,
+        marginVertical: 8,
+        marginHorizontal: 16,
     },
+    productItem:{
+        flex:1,
+        flexDirection:'row',
+        backgroundColor: '#e4e8f0',
+        padding: 20,
+        marginVertical: 4,
+        marginHorizontal: 16,
+    }
 });
 
 
