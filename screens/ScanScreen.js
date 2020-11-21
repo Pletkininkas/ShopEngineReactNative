@@ -1,16 +1,18 @@
 import React, {useState, useEffect} from 'react';
-import { Button, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
+import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
-import Icon from 'react-native-vector-icons/MaterialIcons'
-import { color } from 'react-native-reanimated';
-import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import { Swipeable } from 'react-native-gesture-handler';
+import SwipeRow from '../components/SwipeRow'
 
 
 
-// TODO: disable swipe right menu in this screen
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 
 const ScanScreen = ({ navigation }) => {
@@ -60,11 +62,11 @@ const ScanScreen = ({ navigation }) => {
                 setUri(result.uri)
                 setSelectingShop(true)      
                     
-                    //selectedItem = scannedShop id
+                //selectedItem = scannedShop id
                      
             }else{
                 navigation.goBack();
-            }
+            } 
         }
     };
 
@@ -91,96 +93,126 @@ const ScanScreen = ({ navigation }) => {
             {
                 name: 'Obuoliai',
                 price: 2.58,
-                discount: -0.36
+                discount: -0.36,
+                id:0
                 },
                 {
                 name: 'Bananai',
                 price: 0.99,
-                discount: -0.21
+                discount: -0.21,
+                id:1
                 },
                 {
                     name: 'Dvaro pienas 15%',
                     price: 2.49,
-                    discount: null
+                    discount: null,
+                    id:2
                 },
                 {
                     name: 'Vilniaus duona juoda',
                     price: 0.59,
-                    discount: null
+                    discount: null,
+                    id:3
                 },
                 {
                     name: 'Ananasas',
                     price: 3.39,
-                    discount: null
+                    discount: null,
+                    id:4
                 },
                 {
                     name: 'Šokoladas MILKA',
                     price: 2.99,
-                    discount: -0.17
+                    discount: -0.17,
+                    id:5
                 },
                 {
                 name: 'Obuoliai',
                 price: 2.58,
-                discount: -0.36
+                discount: -0.36,
+                id:6
                 },
                 {
                 name: 'Bananai',
                 price: 0.99,
-                discount: -0.21
+                discount: -0.21,
+                id:7
                 },
                 {
                     name: 'Dvaro pienas 15%',
                     price: 2.49,
-                    discount: null
+                    discount: null,
+                    id:8
                 },
                 {
                     name: 'Vilniaus duona juoda',
                     price: 0.59,
-                    discount: null
+                    discount: null,
+                    id:9
                 },
                 {
                     name: 'Ananasas',
                     price: 3.39,
-                    discount: null
+                    discount: null,
+                    id:10
                 },
                 {
                     name: 'Šokoladas MILKA',
                     price: 2.99,
-                    discount: -0.17
+                    discount: -0.17,
+                    id:11
                 },
                 {
                 name: 'Obuoliai',
                 price: 2.58,
-                discount: -0.36
+                discount: -0.36,
+                id:12
                 },
                 {
                 name: 'Bananai',
                 price: 0.99,
-                discount: -0.21
+                discount: -0.21,
+                id:13
                 },
                 {
                     name: 'Dvaro pienas 15%',
                     price: 2.49,
-                    discount: null
+                    discount: null,
+                    id:14
                 },
                 {
                     name: 'Vilniaus duona juoda',
                     price: 0.59,
-                    discount: null
+                    discount: null,
+                    id:15
                 },
                 {
                     name: 'Ananasas',
                     price: 3.39,
-                    discount: null
+                    discount: null,
+                    id:16
                 },
                 {
                     name: 'Šokoladas MILKA',
                     price: 2.99,
-                    discount: -0.17
+                    discount: -0.17,
+                    id:17
                 },
         ])
 
         // fetch data from api
+        
+    }
+
+    const _rightAction = () => (
+        <View style={[styles.productItem, {justifyContent:'center', alignItems:'center', backgroundColor:'red'}]}>
+            <Ionicons style={{position:'absolute', right:15, justifyContent:'center', alignItems:'center'}} name='ios-trash' size={40} />
+        </View>
+    )
+
+    const delFromArr = (id) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.spring)
+        setScannedList(scannedList.filter(item => item.id !== id));
         
     }
 
@@ -263,12 +295,15 @@ const ScanScreen = ({ navigation }) => {
                     <FlatList style={{width:'100%', marginBottom:80}}
                        // extraData={state}
                         data={scannedList}
+                        keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
-                            <View style={styles.productItem}>
-                                <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
-                                <Text style={{marginLeft:'auto', flex:2}}>{item.price} €</Text>
-                                <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != null ? item.discount + '€' : ''}</Text>
-                            </View>
+                            <SwipeRow item = {item} key = {item.id} onSwipe={() => delFromArr(item.id)} swipeThreshold={-200}>
+                                <View style={styles.productItem}>
+                                    <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
+                                    <Text style={{marginLeft:'auto', flex:2}}>{item.price} €</Text>
+                                    <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != null ? item.discount + '€' : ''}</Text>
+                                </View>
+                            </SwipeRow>
                         )}
                         />
                     </View>
