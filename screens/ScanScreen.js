@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Button, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
+import { Button, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
@@ -9,7 +9,8 @@ import { color } from 'react-native-reanimated';
 import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 
-// TODO: disable swipe right menu in this window
+
+// TODO: disable swipe right menu in this screen
 
 
 const ScanScreen = ({ navigation }) => {
@@ -24,14 +25,23 @@ const ScanScreen = ({ navigation }) => {
     const[showList, setShowList] = useState(false);
 
     const theme = useTheme();
+    const shops = [
+        {key: 'IKI', id:1},
+        {key: 'MAXIMA', id:2},
+        {key: 'LIDL', id:3},
+        {key: 'NORFA', id:4},
+        {key: 'RIMI', id:5}
+    ]
 
      useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
+            setShop('')
             setShowList(false)
             setIsLoading(true)
             setSelectingShop(false)
             setLoadingMsg('Please wait')
             setSelectedItem(null)
+
             _pickCameraImage.call();
         });
 
@@ -52,9 +62,6 @@ const ScanScreen = ({ navigation }) => {
                     
                     //selectedItem = scannedShop id
                      
-                /*this.setState({
-                    uri: result.uri,
-                }, () => this.setState({ showModal: true }))*/
             }else{
                 navigation.goBack();
             }
@@ -63,8 +70,16 @@ const ScanScreen = ({ navigation }) => {
 
     const _onShopConfirmPress = () =>
     {
-        setSelectingShop(false)
-        setShowModal(true)
+        if(shop != ''){
+            setSelectingShop(false)
+            setShowModal(true)
+        }else{
+            if (Platform.OS === 'android') {
+                ToastAndroid.show('Please select the shop', ToastAndroid.SHORT)
+            } else {
+                Alert.alert('Please select the shop');
+            }
+        }
     }
 
 
@@ -176,10 +191,6 @@ const ScanScreen = ({ navigation }) => {
         setLoadingMsg('Comparing prices...')
     }
 
-        //const { uri, showModal } = this.state;
-        const { width, height } = Dimensions.get('window');
-        //const { navigation } = this.props;
-
         if(selectingShop){
             return(
                 <View style={styles.container}>
@@ -191,16 +202,11 @@ const ScanScreen = ({ navigation }) => {
                         <View style={{marginTop:40}}>
                             <FlatList
                            // extraData={state}
-                            data={[
-                                {key: 'IKI', id:1},
-                                {key: 'MAXIMA', id:2},
-                                {key: 'LIDL', id:3},
-                                {key: 'NORFA', id:4},
-                                {key: 'RIMI', id:5}
-                            ]}
+                            data={shops}
                             renderItem={({item}) => (
                                 <TouchableOpacity onPress={() => {
                                     setSelectedItem(item.id)
+                                    setShop(item.key)
                                     }}>
                                     <Text 
                                     style={selectedItem === item.id ? styles.selectedItem : styles.item}
@@ -260,8 +266,8 @@ const ScanScreen = ({ navigation }) => {
                         renderItem={({item}) => (
                             <View style={styles.productItem}>
                                 <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
-                                <Text style={{marginLeft:'auto', flex:2}}>{item.price}</Text>
-                                <Text style={{marginLeft:'auto', color:'green', flex:1}}>{item.discount}</Text>
+                                <Text style={{marginLeft:'auto', flex:2}}>{item.price} €</Text>
+                                <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != null ? item.discount + '€' : ''}</Text>
                             </View>
                         )}
                         />
