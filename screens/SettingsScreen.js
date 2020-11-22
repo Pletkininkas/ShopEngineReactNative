@@ -4,6 +4,9 @@ import { color } from 'react-native-reanimated';
 import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
 
+import configColors from '../config/colors';
+import style from '../config/styles';
+
 const SettingsScreen = () => {
 
   const theme = useTheme();
@@ -11,7 +14,7 @@ const SettingsScreen = () => {
     return (
       <View style={styles.mainContainer}>
             <View style={styles.navBar}>
-                <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Settings</Text>
+                <Text style={style.title}>Settings</Text>
             </View>
             <View style={styles.body}>
                 

@@ -19,8 +19,10 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { color } from 'react-native-reanimated';
+// import { Colors } from 'react-native/Libraries/NewAppScreen';
+// import { color } from 'react-native-reanimated';
+
+import configColors from '../config/colors';
 
 export function DrawerContent(props) {
 
@@ -37,7 +39,7 @@ export function DrawerContent(props) {
                             <Icon
                             name="ios-person"
                             size={75}                            
-                            color={'#fff'}/>
+                            color={configColors.primary}/>
                             <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                                 <Title style={styles.title}>Name Surname</Title>
                                 <Caption style={styles.caption}>username</Caption>

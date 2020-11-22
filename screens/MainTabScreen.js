@@ -8,6 +8,8 @@ import HomeScreen from './HomeScreen'
 import ScanScreen from './ScanScreen'
 import NewListScreen from './NewListScreen'
 
+import configColors from '../config/colors'
+
 const HomeStack = createStackNavigator();
 const ScanStack = createStackNavigator();
 const NewListStack = createStackNavigator();
@@ -20,7 +22,7 @@ const MainTabScreen = () => (
       barStyle={{
         backgroundColor: '#121212'
         }}
-      activeColor="#1db954"
+      activeColor={configColors.green}
       inactiveColor="#E9F1F7"
       shifting={true}
     >
@@ -66,12 +68,12 @@ const HomeStackScreen = ({navigation}) => (
     <HomeStack.Navigator screenOptions={{
     headerTitleAlign: 'center',
     headerStyle: {
-        backgroundColor: '#1db954',
+        backgroundColor: configColors.green
     },
     headerTintColor: '#000',
     headerTitleStyle: {
         fontWeight: 'bold',
-        color: '#fff'
+        color: configColors.primary
     }
     }}>
     <HomeStack.Screen name="What's new?" component={HomeScreen} options={{
@@ -86,12 +88,12 @@ const ScanStackScreen = ({navigation}) => (
 <ScanStack.Navigator screenOptions={{
     headerTitleAlign: 'center',
     headerStyle: {
-    backgroundColor: '#1db954'
+    backgroundColor: configColors.green
     },
     headerTintColor: '#000',
     headerTitleStyle: {
     fontWeight: 'bold',
-    color: '#fff'
+    color: configColors.primary
     }
     }}>
     <ScanStack.Screen name="New Receipt Scan" component={ScanScreen} options={{
@@ -106,12 +108,12 @@ const NewListStackScreen = ({navigation}) => (
 <NewListStack.Navigator screenOptions={{
     headerTitleAlign: 'center',
     headerStyle: {
-    backgroundColor: '#1db954'
+    backgroundColor: configColors.green
     },
     headerTintColor: '#000',
     headerTitleStyle: {
     fontWeight: 'bold',
-    color: '#fff'
+    color: configColors.primary
     }
     }}>
     <NewListStack.Screen name="New Shopping List" component={NewListScreen} options={{
