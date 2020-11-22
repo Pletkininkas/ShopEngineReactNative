@@ -9,8 +9,8 @@ import { color } from 'react-native-reanimated';
 
 const ScanScreen = ({ navigation }) => {
     const [image, setImage] = useState(null);
-    const theme = useTheme();
-    const {colors} = useTheme();
+    //const theme = useTheme();
+    //const {colors} = useTheme();
 
   useEffect(() => {
     (async () => {
@@ -38,12 +38,12 @@ const ScanScreen = ({ navigation }) => {
   };
 
     return (        
-        <View style={styles.container}>
-            <View style={styles.body} backgroundColor={colors.background}>
+        <View style={styles().container}>
+            <View style={styles().body}>
                 {image && <Image source={{ uri: image}} style={{width:200, height:200, resizeMode:"contain"}} />}
-                <View style={[styles.buttonOnBot, styles.buttonStyle]}>
+                <View style={[styles().buttonOnBot, styles().buttonStyle]}>
                     <TouchableOpacity onPress = {pickImage}>
-                        <View style={styles.btnStyle} borderColor={theme.dark ? configColors.secondary : configColors.primary }>
+                        <View style={styles().btnStyle} borderColor={configColors.secondary}>
                             <Text style = {{color: configColors.secondary}}>Scan Receipt</Text>
                         </View>
                     </TouchableOpacity>

@@ -7,11 +7,11 @@ import styles from '../config/styles';
 const NewListScreen = ({ navigation }) => {
 
     //const theme = useTheme();
-    const {colors} = useTheme();
+    //const {colors} = useTheme();
 
     return (
-        <View style={styles.container}>                  
-          <View style={styles.body} backgroundColor={colors.background}>          
+        <View style={styles().container}>                  
+          <View style={styles().body}>          
             </View>
       </View>
     );

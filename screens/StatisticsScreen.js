@@ -10,14 +10,14 @@ import styles from '../config/styles';
 const StatisticsScreen = () => {
 
     const theme = useTheme();
-    const {colors} = useTheme();
+    //const {colors} = useTheme();
 
     return (
-      <View style={styles.containerm}>
+      <View style={styles().containerm}>
           <View>
-                <Text style={styles.title}>Statistics</Text>
+                <Text style={styles().title}>Statistics</Text>
           </View>
-          <View style={styles.bodym} backgroundColor={colors.background}>  
+          <View style={styles().bodym}>  
               
             </View>
       </View>

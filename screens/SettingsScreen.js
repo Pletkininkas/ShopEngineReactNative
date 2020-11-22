@@ -9,12 +9,12 @@ import style from '../config/styles';
 
 const SettingsScreen = () => {
 
-  const theme = useTheme();
+  //const theme = useTheme();
 
     return (
       <View style={styles.mainContainer}>
             <View style={styles.navBar}>
-                <Text style={style.title}>Settings</Text>
+                <Text style={style().title}>Settings</Text>
             </View>
             <View style={styles.body}>
                 

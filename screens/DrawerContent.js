@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     },
     userInfoSection: {
         paddingLeft: 20,
-        backgroundColor: '#1db954',
+        backgroundColor: configColors.green,
         paddingTop: 30,
         paddingBottom: 10,
         marginBottom: -10,

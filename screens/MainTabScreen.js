@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
+import { useTheme } from '@react-navigation/native';
 
 import HomeScreen from './HomeScreen'
 import ScanScreen from './ScanScreen'
