@@ -25,6 +25,8 @@ const ScanScreen = ({ navigation }) => {
     const[selectedItem, setSelectedItem] = useState(null)
     const[scannedList, setScannedList] = useState([])
     const[showList, setShowList] = useState(false);
+    const[showFailMsg, setShowFailMsg] = useState(false);
+    
 
     const theme = useTheme();
     const shops = [
@@ -43,6 +45,7 @@ const ScanScreen = ({ navigation }) => {
             setSelectingShop(false)
             setLoadingMsg('Please wait')
             setSelectedItem(null)
+            setShowFailMsg(false)
 
             _pickCameraImage.call();
         });
@@ -200,16 +203,22 @@ const ScanScreen = ({ navigation }) => {
                 },
         ])*/
 
-        var data = await _getScannedListAsync(par.uri);
+        let datajson = await _getScannedListAsync(par.uri);
+        var data = []
+        for(var i in datajson){
+            data.push(datajson[i])
+            data[i].id = i
+        }
         try{
             if(data.length < 1){
-                console.log("nerado produkto")
+                setShowFailMsg(true);
             }else{
                 setScannedList(data)
-                showList(true)
+                setShowList(true)
             }
         }catch(error){
-            console.log("got not an array")
+            console.log(error)
+            setShowFailMsg(true);
         }
         // fetch data from api
         
@@ -257,6 +266,7 @@ const ScanScreen = ({ navigation }) => {
             }
           );
           let json = await response.json();
+          console.log(json)
           return json;
         } catch (error) {
           console.error('ERROR:' + error);
@@ -339,9 +349,9 @@ const ScanScreen = ({ navigation }) => {
                         renderItem={({item}) => (
                             <SwipeRow item = {item} key = {item.id} onSwipe={() => delFromArr(item.id)} swipeThreshold={-200}>
                                 <View style={styles.productItem}>
-                                    <Text style={{fontWeight:'bold', flex:6}}>{item.name}</Text>
-                                    <Text style={{marginLeft:'auto', flex:2}}>{item.price} €</Text>
-                                    <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != null ? item.discount + '€' : ''}</Text>
+                                    <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
+                                    <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
+                                    <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
                                 </View>
                             </SwipeRow>
                         )}
@@ -356,6 +366,16 @@ const ScanScreen = ({ navigation }) => {
                     </View>
                 </View>
                 
+            )
+        }else if(showFailMsg){
+            return(
+            <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                        <Image style={{width:128, height:128}} source={require('../assets/sadface.png')}/>
+                        <Text style={{color:'red', margin:50, textAlign:'center'}}> Couldn't find any products. {"\n"}{"\n"} Please try taking a better
+                        photo of the receipt and crop only the products and their prices. </Text>
+                    </View>
+                </View>
             )
         }
         else{
