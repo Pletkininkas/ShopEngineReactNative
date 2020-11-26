@@ -85,10 +85,10 @@ const ScanScreen = ({ navigation }) => {
     }
 
 
-    const _readImage = (data) =>{
-        setUri(data.uri)
+    const _readImage = async (par) =>{
+        setUri(par.uri)
         setLoadingMsg('Reading image...')
-        setShowList(true);
+        /*setShowList(true);
         setScannedList([
             {
                 name: 'Obuoliai',
@@ -198,8 +198,19 @@ const ScanScreen = ({ navigation }) => {
                     discount: -0.17,
                     id:17
                 },
-        ])
+        ])*/
 
+        var data = await _getScannedListAsync(par.uri);
+        try{
+            if(data.length < 1){
+                console.log("nerado produkto")
+            }else{
+                setScannedList(data)
+                showList(true)
+            }
+        }catch(error){
+            console.log("got not an array")
+        }
         // fetch data from api
         
     }
@@ -222,6 +233,35 @@ const ScanScreen = ({ navigation }) => {
         setShowList(false)
         setLoadingMsg('Comparing prices...')
     }
+
+    const _getScannedListAsync = async (u) => {
+        let filename = u.split('/').pop();
+        let match = /\.(\w+)$/.exec(filename);
+        let imageType = match ? `image/${match[1]}` : `image`;
+        var photo = { 
+            uri: u,
+            type: imageType,
+            name: filename,
+        }
+        var form = new FormData();
+        form.append("scannedPhoto", photo);
+        try {
+          let response = await fetch(
+            'https://6c653639604f.ngrok.io/ocr', {
+            method: 'POST',
+            headers: {
+                Accept: "application/json",
+                'Content-Type': 'multipart/form-data'
+            },
+            body: form
+            }
+          );
+          let json = await response.json();
+          return json;
+        } catch (error) {
+          console.error('ERROR:' + error);
+        }
+      };
 
         if(selectingShop){
             return(
@@ -278,7 +318,7 @@ const ScanScreen = ({ navigation }) => {
                             onToggleModal={() => setShowModal(!showModal)}
                             saveOptions={{
                                 compress: 1,
-                                format: 'png',
+                                format: 'jpeg',
                                 base64: true,
                             }}
                             
