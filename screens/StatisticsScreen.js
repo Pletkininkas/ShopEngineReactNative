@@ -4,16 +4,20 @@ import { color } from 'react-native-reanimated';
 import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
 
+import configColors from '../config/colors';
+import styles from '../config/styles';
+
 const StatisticsScreen = () => {
 
     const theme = useTheme();
+    //const {colors} = useTheme();
 
     return (
-      <View style={styles.container}>
+      <View style={styles().containerm}>
           <View>
-                <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Statistics</Text>
+                <Text style={styles().title}>Statistics</Text>
           </View>
-          <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+          <View style={styles().bodym}>  
               
             </View>
       </View>
@@ -21,34 +25,3 @@ const StatisticsScreen = () => {
 };
 
 export default StatisticsScreen;
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        backgroundColor: '#1db954',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-        padding: 30,
-        paddingBottom: 0
-    },
-    body: {
-        flex: 0,
-        flexGrow: 1,
-        flexDirection: "column",
-        //backgroundColor: '#fff',
-        height: '95%',
-        width: '95%',
-        marginTop: 10,
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
-        borderColor: '#000'
-    }
-});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import {
     useTheme,
     Title,
@@ -19,8 +19,10 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { color } from 'react-native-reanimated';
+// import { Colors } from 'react-native/Libraries/NewAppScreen';
+// import { color } from 'react-native-reanimated';
+
+import configColors from '../config/colors';
 
 export function DrawerContent(props) {
 
@@ -37,7 +39,7 @@ export function DrawerContent(props) {
                             <Icon
                             name="ios-person"
                             size={75}                            
-                            color={'#fff'}/>
+                            color={configColors.primary}/>
                             <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                                 <Title style={styles.title}>Name Surname</Title>
                                 <Caption style={styles.caption}>username</Caption>
@@ -128,7 +130,12 @@ export function DrawerContent(props) {
                         />
                     )}
                     label="Sign Out"
-                    onPress={() => {signOut()}}
+                    onPress={() => {
+                        Alert.alert("Sign Out", "Are you sure you want to sign out?",  [
+                            {text: "Yes", onPress: () => signOut()},   
+                            {text: "No", style: 'cancel'}                                                 
+                        ])
+                    }}
                 />
             </Drawer.Section>
         </View>
@@ -141,7 +148,7 @@ const styles = StyleSheet.create({
     },
     userInfoSection: {
         paddingLeft: 20,
-        backgroundColor: '#1db954',
+        backgroundColor: configColors.green,
         paddingTop: 30,
         paddingBottom: 10,
         marginBottom: -10,
