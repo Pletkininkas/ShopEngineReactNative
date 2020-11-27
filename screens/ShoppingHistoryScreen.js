@@ -46,6 +46,8 @@ const ShoppingHistoryScreen = () => {
           <View style={styles().bodym}>  
           <SafeAreaView style={{color:"#ccc"}}>
             <FlatList
+              decelerationRate='normal'
+              showsVerticalScrollIndicator={false}
               data={receipts}
               renderItem={({item}) => (<TouchableOpacity onPress={() => {}} style={contentStyles.item} >
                 <View style={contentStyles.divider}>
