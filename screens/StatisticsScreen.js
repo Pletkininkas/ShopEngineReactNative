@@ -43,7 +43,7 @@ const StatisticsScreen = () => {
                 <Text style={styles().title}>Statistics</Text>
           </View>
           <View style={styles().bodym}>
-          <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year spendings pattern</Text> 
+          <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
           <View style={{ height: 200, padding: 20, flexDirection: 'row'  }}>                           
                 <YAxis
                     data={lineData}
