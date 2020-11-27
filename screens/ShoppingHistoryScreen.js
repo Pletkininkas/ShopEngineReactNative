@@ -8,6 +8,8 @@ import { back } from 'react-native/Libraries/Animated/src/Easing';
 import configColors from '../config/colors';
 import styles from '../config/styles';
 
+import { apiUrl, user } from '../components/context';
+
 const ShoppingHistoryScreen = () => {
 
     const theme = useTheme();
@@ -16,12 +18,13 @@ const ShoppingHistoryScreen = () => {
     const [receipts, setReceipts] = useState([]);
     
     useState(() => {
-      fetch("http://80f2e652776b.ngrok.io/receipt", {
+      let token = user.token;
+      fetch(apiUrl+'/receipt', {
         method: 'GET',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + 'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJFdmFsZGFzIiwibmJmIjoxNjA2NDQ4Nzk4LCJleHAiOjE2MDY1MzUxOTgsImlhdCI6MTYwNjQ0ODc5OH0.02NofSIVEU0pVyxGc4oBIhwtKuZW2epP6WUr70hSkl8mLJuHbOBtJcQCYDFbdScmY5mULR2tW1h0jKwlXfkY1w'
+          'Authorization': 'Bearer ' + token
         }
       }).then(data => {
           return data.json();
@@ -44,9 +47,9 @@ const ShoppingHistoryScreen = () => {
           <SafeAreaView style={{color:"#ccc"}}>
             <FlatList
               data={receipts}
-              renderItem={({item}) => (<TouchableOpacity onPress={() => {}} style={styles.item} >
-                <View style={styles.divider}>
-                  <View style={styles.leftText}>
+              renderItem={({item}) => (<TouchableOpacity onPress={() => {}} style={contentStyles.item} >
+                <View style={contentStyles.divider}>
+                  <View style={contentStyles.leftText}>
                     <Text>{item.date}</Text>
                     <Text>{item.total}</Text>
                     <Text>{item.shop}</Text>
@@ -80,7 +83,7 @@ const ShoppingHistoryScreen = () => {
 
 export default ShoppingHistoryScreen;
 
-const styles = StyleSheet.create({
+const contentStyles = StyleSheet.create({
   item: {
     elevation: 10,
     backgroundColor: "#f2fcf6",

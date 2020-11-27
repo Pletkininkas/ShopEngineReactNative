@@ -22,7 +22,7 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext } from './components/context';
+import { AuthContext, apiUrl, user, setUser } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
@@ -103,7 +103,7 @@ const App = () => {
       let success = false;
       let errorMessage = 'Fields are empty!';
       if (userName.length != 0 && password.length != 0 ) {
-        const response = await fetch('http://80f2e652776b.ngrok.io/auth/login', {
+        const response = await fetch(apiUrl+'/auth/login', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -119,12 +119,22 @@ const App = () => {
         success = data.success;
         errorMessage = data.message;
       }
-      //console.log(success);
+
       if( success ) {
         try{
           await AsyncStorage.setItem('userToken', userToken)
+          await AsyncStorage.setItem('userName', userName);
+          user.token = userToken;
+          user.username = userName;
         } catch(e) {
-          console.log(e);
+          Alert.alert(
+            'Sign In - Error',
+            'Application does not have privileges to device storage',
+            [
+              { text: 'OK', onPress: () => console.log('OK Pressed (no storage privileges)') }
+            ],
+            { cancelable: true }
+          );
         }
       } else {
         Alert.alert(
@@ -140,10 +150,14 @@ const App = () => {
     },
     signOut: async() => {
       try{
+        user.token = null;
+        user.username = null;
         await AsyncStorage.removeItem('userToken');
+        await AsyncStorage.removeItem('userName');
       } catch(e) {
         console.log(e);
       }
+      setIsDarkTheme(false);
       dispatch({ type: 'LOGOUT' });
     },
     signUp: async(userEmail, userName, password, confirm_password) => {
@@ -157,7 +171,7 @@ const App = () => {
         errorMessage = 'Fields are empty!';
       }
       if (userName.length != 0 && password.length != 0 && password == confirm_password) {
-        const response = await fetch('http://80f2e652776b.ngrok.io/auth/register', {
+        const response = await fetch(apiUrl+'/auth/register', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -207,6 +221,9 @@ const App = () => {
       userToken = null;
       try{
         userToken = await AsyncStorage.getItem('userToken')
+        let userName = await AsyncStorage.getItem('userName');
+        user.userName = userName;
+        setUser(userName, userToken);
       } catch(e) {
         console.log(e);
       }
