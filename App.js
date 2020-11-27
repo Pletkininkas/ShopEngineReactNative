@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Alert, Keyboard } from 'react-native';
 import { 
   NavigationContainer, 
   DefaultTheme as NavigationDefaultTheme,
@@ -88,8 +88,6 @@ const App = () => {
       case 'REGISTER':
         return {
           ...prevState,
-          userName: action.id,
-          userToken: action.token,
           isLoading: false,
         };
     }
@@ -99,15 +97,44 @@ const App = () => {
 
   const authContext = React.useMemo(() => ({
     signIn: async(userName, password) => {
+      Keyboard.dismiss();
       let userToken;
       userToken = null;
-      if( userName == 'user' && password == 'pass' ) {
+      let success = false;
+      let errorMessage = 'Fields are empty!';
+      if (userName.length != 0 && password.length != 0 ) {
+        const response = await fetch('http://80f2e652776b.ngrok.io/auth/login', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: userName,
+            password: password
+          })
+        });
+        const data = await response.json();
+        userToken = await data.data;
+        success = data.success;
+        errorMessage = data.message;
+      }
+      //console.log(success);
+      if( success ) {
         try{
-          userToken = 'asdasd';
           await AsyncStorage.setItem('userToken', userToken)
         } catch(e) {
           console.log(e);
         }
+      } else {
+        Alert.alert(
+          'Sign In',
+          errorMessage,
+          [
+            { text: 'OK', onPress: () => console.log('OK Pressed') }
+          ],
+          { cancelable: true }
+        );
       }
       dispatch({ type: 'LOGIN', id: userName, token: userToken });
     },
@@ -119,16 +146,61 @@ const App = () => {
       }
       dispatch({ type: 'LOGOUT' });
     },
-    signUp: () => {
-      
+    signUp: async(userEmail, userName, password, confirm_password) => {
+      Keyboard.dismiss();
+      let success = false;
+      let errorMessage;
+      if (password != confirm_password)
+      {
+        errorMessage = 'Passwords do not match!';
+      } else {
+        errorMessage = 'Fields are empty!';
+      }
+      if (userName.length != 0 && password.length != 0 && password == confirm_password) {
+        const response = await fetch('http://80f2e652776b.ngrok.io/auth/register', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            useremail: userEmail,
+            username: userName,
+            password: password
+          })
+        });
+        const data = await response.json();
+        success = data.success;
+        errorMessage = data.message;
+      }
+
+      if( !success )
+      {
+        Alert.alert(
+          'Sign Up - Error',
+          errorMessage,
+          [
+            { text: 'OK', onPress: () => {} }
+          ],
+          { cancelable: true }
+        );
+      } else {
+        Alert.alert(
+          'Sign Up - Success',
+          'You have successfully signed up!\nNow you can log in.',
+          [
+            { text: 'OK', onPress: () => {} }
+          ],
+          { cancelable: true }
+        );
+      }
     },
-        
     toggleTheme: () => {
       setIsDarkTheme( isDarkTheme => !isDarkTheme );
     }
   }), []);
 
-  // Check if user is logged in
+  // Check if user is logged in on app loading
   useEffect(() => {
     setTimeout(async() => {
       let userToken;

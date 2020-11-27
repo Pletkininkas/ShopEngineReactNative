@@ -10,11 +10,14 @@ const ProfileScreen = () => {
 
     return (
       <View style={styles.container}>
-          <View>
+            <View>
                 <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Profile</Text>
-          </View>
-          <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-              
+            </View>
+            <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'} padding={20}>
+                <Text>Email address: Evaldas.Grublys@gmail.com</Text>
+                <Text>Username: Evaldas</Text>
+                <Text>Joined: 2020-11-27 8:30:59</Text>
+                <Button title="Change password"/>
             </View>
       </View>
     );
@@ -36,14 +39,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.22,
         shadowRadius: 2.22,
         elevation: 3,
-        padding: 30,
+        paddingTop: 30,
         paddingBottom: 0
     },
     body: {
         flex: 0,
         flexGrow: 1,
         flexDirection: "column",
-        //backgroundColor: '#fff',
         height: '95%',
         width: '95%',
         marginTop: 10,
