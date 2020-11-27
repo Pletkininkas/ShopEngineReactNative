@@ -8,7 +8,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons'
 import { color } from 'react-native-reanimated';
 import { TouchableHighlight, TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
-
 // TODO: disable swipe right menu in this window
 
 
@@ -71,7 +70,6 @@ export default class ScanScreen extends React.Component {
             selectingShop: false,
         }, () => this.setState({ showModal: true }))
     }
-
 
     _readImage(data){
         this.setState({
@@ -300,7 +298,6 @@ export default class ScanScreen extends React.Component {
         
     }
 }
-
 //export default ScanScreen;
 
 const styles = StyleSheet.create({
@@ -422,3 +419,4 @@ const styles = StyleSheet.create({
             </View>
         </View>
     );*/
+

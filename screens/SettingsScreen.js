@@ -4,17 +4,20 @@ import { color } from 'react-native-reanimated';
 import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
 
+import configColors from '../config/colors';
+import style from '../config/styles';
+
 const SettingsScreen = () => {
 
-  const theme = useTheme();
+  //const theme = useTheme();
 
     return (
-      <View style={styles.container}>
-          <View>
-                <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Settings</Text>
-          </View>
-          <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-              
+      <View style={styles.mainContainer}>
+            <View style={styles.navBar}>
+                <Text style={style().title}>Settings</Text>
+            </View>
+            <View style={styles.body}>
+                
             </View>
       </View>
     );

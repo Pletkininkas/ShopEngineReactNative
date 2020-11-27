@@ -5,9 +5,13 @@ import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
 import { back } from 'react-native/Libraries/Animated/src/Easing';
 
+import configColors from '../config/colors';
+import styles from '../config/styles';
+
 const ShoppingHistoryScreen = () => {
 
     const theme = useTheme();
+    //const { colors } = useTheme();
 
     const [receipts, setReceipts] = useState([]);
     
@@ -32,12 +36,12 @@ const ShoppingHistoryScreen = () => {
     }, []);
 
     return (
-      <View style={styles.container}>
+      <View style={styles().containerm}>
           <View>
-                <Text style={{fontSize: 20, color: '#fff', fontWeight: 'bold'}}>Shopping History</Text>
+                <Text style={styles().title}>Shopping History</Text>
           </View>
-            <View style={styles.body} backgroundColor={theme.dark ? '#1c1c1c' : '#fff' }>
-            <SafeAreaView style={{color:"#ccc"}}>
+          <View style={styles().bodym}>  
+          <SafeAreaView style={{color:"#ccc"}}>
             <FlatList
               data={receipts}
               renderItem={({item}) => (<TouchableOpacity onPress={() => {}} style={styles.item} >
@@ -77,51 +81,24 @@ const ShoppingHistoryScreen = () => {
 export default ShoppingHistoryScreen;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        backgroundColor: '#1db954',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-        paddingTop: 30,
-        paddingBottom: 0
-    },
-    body: {
-        flex: 0,
-        flexGrow: 1,
-        flexDirection: "column",
-        height: '95%',
-        width: '95%',
-        marginTop: 10,
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
-        borderColor: '#000'
-    },
-    item: {
-      elevation: 10,
-      backgroundColor: "#f2fcf6",
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      margin: 10
-    },
-    leftText: {
-      alignSelf: 'center'
-    },
-    rightButton: {
-      width: 30,
-      height: 50,
-      alignItems: 'center'
-    },
-    divider: {
-      flexDirection: 'row',
-      justifyContent: 'space-between'
-    }
+  item: {
+    elevation: 10,
+    backgroundColor: "#f2fcf6",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    margin: 10
+  },
+  leftText: {
+    alignSelf: 'center'
+  },
+  rightButton: {
+    width: 30,
+    height: 50,
+    alignItems: 'center'
+  },
+  divider: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  }
 });
