@@ -220,15 +220,9 @@ const ScanScreen = ({ navigation }) => {
             console.log(error)
             setShowFailMsg(true);
         }
-        // fetch data from api
         
     }
 
-    const _rightAction = () => (
-        <View style={[styles.productItem, {justifyContent:'center', alignItems:'center', backgroundColor:'red'}]}>
-            <Ionicons style={{position:'absolute', right:15, justifyContent:'center', alignItems:'center'}} name='ios-trash' size={40} />
-        </View>
-    )
 
     const delFromArr = (id) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.spring)
