@@ -388,10 +388,12 @@ const ScanScreen = ({ navigation }) => {
 
 export default ScanScreen;
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1c1c1c',
+        flexGrow: 1,
+        backgroundColor: '#1db954',
         alignItems: 'center',
         justifyContent: 'center',
         shadowOffset: {
@@ -401,15 +403,15 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.22,
         shadowRadius: 2.22,
         elevation: 3,
+        paddingTop: 10,
+        paddingBottom: 0
     },
     body: {
         flex: 0,
         flexGrow: 1,
         flexDirection: "column",
-        //backgroundColor: '#fff',
-        height: '95%',
+        height: '100%',
         width: '95%',
-        marginTop: 10,
         borderTopRightRadius: 10,
         borderTopLeftRadius: 10,
         borderColor: '#000'
@@ -463,3 +465,4 @@ const styles = StyleSheet.create({
         borderRadius: 10
     }
 });
+

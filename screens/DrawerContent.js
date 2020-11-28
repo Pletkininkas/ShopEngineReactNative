@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
 import {
     useTheme,
     Title,
@@ -19,8 +19,12 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { color } from 'react-native-reanimated';
+import { user, apiUrl } from '../components/context';
+// import { Colors } from 'react-native/Libraries/NewAppScreen';
+// import { color } from 'react-native-reanimated';
+
+import configColors from '../config/colors';
+import { useEffect } from 'react/cjs/react.development';
 
 export function DrawerContent(props) {
 
@@ -28,6 +32,31 @@ export function DrawerContent(props) {
 
     const { signOut, toggleTheme } = React.useContext(AuthContext);
 
+    const name = user.username;
+
+    const [receiptCount, setReceiptCount] = useState(0)
+
+    useEffect(() => {
+        let token = user.token;
+        fetch(apiUrl+'/receipt', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        }).then(data => {
+            return data.json();
+          })
+          .then(data => {
+            setReceiptCount(Object(data.data).length);
+            user.receipt = data.data;
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }, []);
+    
     return (
         <View style={{flex:1}}>
             <DrawerContentScrollView { ... props}>
@@ -37,10 +66,10 @@ export function DrawerContent(props) {
                             <Icon
                             name="ios-person"
                             size={75}                            
-                            color={'#fff'}/>
+                            color={configColors.primary}/>
                             <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
-                                <Title style={styles.title}>Name Surname</Title>
-                                <Caption style={styles.caption}>username</Caption>
+                                <Title style={styles.title}>{name}</Title>
+                                <Caption style={styles.caption}>User</Caption>
                             </View>
                         </View>
                         <View style={styles.column, {marginTop: 10}}>
@@ -49,7 +78,7 @@ export function DrawerContent(props) {
                                 <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
                             </View>
                             <View style={styles.section}>
-                                <Paragraph style={styles.paragraph, styles.caption}>6</Paragraph>
+                                <Paragraph style={styles.paragraph, styles.caption}>{receiptCount}</Paragraph>
                                 <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
                             </View>
                         </View>
@@ -128,7 +157,12 @@ export function DrawerContent(props) {
                         />
                     )}
                     label="Sign Out"
-                    onPress={() => {signOut()}}
+                    onPress={() => {
+                        Alert.alert("Sign Out", "Are you sure you want to sign out?",  [
+                            {text: "Yes", onPress: () => signOut()},   
+                            {text: "No", style: 'cancel'}                                                 
+                        ])
+                    }}
                 />
             </Drawer.Section>
         </View>
@@ -141,7 +175,7 @@ const styles = StyleSheet.create({
     },
     userInfoSection: {
         paddingLeft: 20,
-        backgroundColor: '#1db954',
+        backgroundColor: configColors.green,
         paddingTop: 30,
         paddingBottom: 10,
         marginBottom: -10,
