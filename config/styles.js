@@ -15,7 +15,7 @@ const style = () =>
             flexDirection: "column",
             height: '95%',
             width: '95%',
-            marginTop: 10,
+            marginTop: -30,
             borderTopRightRadius: 10,
             borderTopLeftRadius: 10,
             borderColor: '#000',
@@ -65,6 +65,7 @@ const style = () =>
             backgroundColor: '#1c1c1c',
             shadowOpacity: 0.22,
             shadowRadius: 2.22,
+            paddingTop: -20,
             elevation: 3,
         },
     
@@ -82,7 +83,7 @@ const style = () =>
             shadowOpacity: 0.22,
             shadowRadius: 2.22,
             elevation: 3,
-            padding: 30,
+            paddingTop: 40,
             paddingBottom: 0
         },
     

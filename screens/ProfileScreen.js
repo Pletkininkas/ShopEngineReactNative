@@ -17,9 +17,14 @@ const ProfileScreen = () => {
             <View>
                 <Text style={styles().title}>Profile</Text>
             </View>
-            <View style={styles().bodym}> 
-
-            </View>    
+            <View style={styles().bodym} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'} padding={20}>
+                <View>
+                    <Text>Email address: Evaldas.Grublys@gmail.com</Text>
+                    <Text>Username: Evaldas</Text>
+                    <Text>Joined: 2020-11-27 8:30:59</Text>
+                    <Button title="Change password"/>
+                </View>
+            </View>
       </View>
     );
 };

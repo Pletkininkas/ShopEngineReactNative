@@ -40,9 +40,7 @@ const SplashScreen = ({ navigation }) => {
                 />
             </View>
             <Animatable.View
-                  style={[styles.footer, {
-                    backgroundColor: configColors.secondary
-                }]}
+                  style={[styles.footer]}
                 animation="fadeInUpBig"
                 delay={500}
                 duration={1000}

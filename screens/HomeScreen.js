@@ -11,7 +11,7 @@ const HomeScreen = ({ navigation }) => {
     //const {colors} = useTheme();
 
     return (
-      <View style={styles().container}>        
+      <View style={styles().containerm}>        
           <View style={styles().body}>          
             </View>
       </View>

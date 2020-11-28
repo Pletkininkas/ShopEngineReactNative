@@ -81,7 +81,7 @@ const SignInScreen = ({ navigation }) => {
                 animation="fadeInUpBig"
                 style={styles.footer}
             >
-                <Text style={styles.text_footer}>Email</Text>
+                <Text style={styles.text_footer}>Username</Text>
                 <View style={styles.action}>
                     <FontAwesome
                         name="user-o"
@@ -89,7 +89,7 @@ const SignInScreen = ({ navigation }) => {
                         size={20}
                     />
                     <TextInput
-                        placeholder="Your Email"
+                        placeholder="Your Username"
                         style={styles.textInput}
                         autoCapitalize="none"
                         onChangeText={(value)=> textInputChange(value)}

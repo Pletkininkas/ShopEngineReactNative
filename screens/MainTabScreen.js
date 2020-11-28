@@ -77,7 +77,7 @@ const HomeStackScreen = ({navigation}) => (
         color: configColors.primary
     }
     }}>
-    <HomeStack.Screen name="What's new?" component={HomeScreen} options={{
+    <HomeStack.Screen name="Home" component={HomeScreen} options={{
         headerLeft: () => {
         <Ionicons.Button name="ios-menu" size={25} backgroundColor="#00ffff" onPress={() => navigation.openDrawer()}></Ionicons.Button>
         },
