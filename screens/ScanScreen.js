@@ -208,6 +208,7 @@ const ScanScreen = ({ navigation }) => {
         for(var i in datajson){
             data.push(datajson[i])
             data[i].id = i
+            data[i].shop = shop
         }
         try{
             if(data.length < 1){
@@ -230,11 +231,33 @@ const ScanScreen = ({ navigation }) => {
         
     }
 
-    const _onListConfirmPress = () =>
+    const _onListConfirmPress = async () =>
     {
         // save the products to history and compare them to other shops
         setShowList(false)
         setLoadingMsg('Comparing prices...')
+        let result = await _getBetterPricedItemsAsync();
+    }
+
+    const _getBetterPricedItemsAsync = async () => {
+        try {
+            let response = await fetch(
+              'https://c0edbca2c1f4.ngrok.io/ocr/compare', {
+              method: 'POST',
+              headers: {
+                  Accept: "application/json",
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(scannedList)
+              }
+            );
+            let json = await response.json();
+            console.log("--------------")
+            console.log(json)
+            return 0;
+          } catch (error) {
+            console.error('ERROR:' + error);
+          }
     }
 
     const _getScannedListAsync = async (u) => {
@@ -250,7 +273,7 @@ const ScanScreen = ({ navigation }) => {
         form.append("scannedPhoto", photo);
         try {
           let response = await fetch(
-            'https://6c653639604f.ngrok.io/ocr', {
+            'https://c0edbca2c1f4.ngrok.io/ocr/read', {
             method: 'POST',
             headers: {
                 Accept: "application/json",
