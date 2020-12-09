@@ -8,7 +8,7 @@ import { back } from 'react-native/Libraries/Animated/src/Easing';
 import configColors from '../config/colors';
 import styles from '../config/styles';
 
-import { apiUrl, user } from '../components/context';
+import config, { user } from '../config';
 
 const ShoppingHistoryScreen = () => {
 
@@ -19,7 +19,7 @@ const ShoppingHistoryScreen = () => {
     
     useState(() => {
       let token = user.token;
-      fetch(apiUrl+'/receipt', {
+      fetch(config.API_URL+'receipt', {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -69,7 +69,8 @@ const ShoppingHistoryScreen = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginTop: 10,
-                    backgroundColor: "#000",
+                    backgroundColor: "#1db954",
+                    borderRadius: 10,
                   }} onPress={() => {}}>
                     <Text style={{ color: "#fff" }}>Show more</Text>
                   </TouchableOpacity>

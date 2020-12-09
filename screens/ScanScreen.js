@@ -8,6 +8,8 @@ import * as Permissions from 'expo-permissions'
 import { Swipeable } from 'react-native-gesture-handler';
 import SwipeRow from '../components/SwipeRow'
 
+import config from '../config'
+
 
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -250,7 +252,7 @@ const ScanScreen = ({ navigation }) => {
         form.append("scannedPhoto", photo);
         try {
           let response = await fetch(
-            'https://6c653639604f.ngrok.io/ocr', {
+            config.API_URL+'ocr', {
             method: 'POST',
             headers: {
                 Accept: "application/json",
