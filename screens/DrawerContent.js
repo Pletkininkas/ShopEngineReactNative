@@ -19,7 +19,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import { user, apiUrl } from '../components/context';
+import config, { user } from '../config';
 // import { Colors } from 'react-native/Libraries/NewAppScreen';
 // import { color } from 'react-native-reanimated';
 
@@ -37,13 +37,12 @@ export function DrawerContent(props) {
     const [receiptCount, setReceiptCount] = useState(0)
 
     useEffect(() => {
-        let token = user.token;
-        fetch(apiUrl+'/receipt', {
+        fetch(config.API_URL+'receipt', {
           method: 'GET',
           headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
+            'Authorization': 'Bearer ' + user.token
           }
         }).then(data => {
             return data.json();

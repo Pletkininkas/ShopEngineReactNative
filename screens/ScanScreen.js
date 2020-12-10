@@ -11,8 +11,11 @@ import config from '../config'
 
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> dev
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
