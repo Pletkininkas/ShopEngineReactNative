@@ -22,11 +22,13 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext, apiUrl, user, setUser } from './components/context';
+import { AuthContext, apiUrl } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
 import AsyncStorage from '@react-native-community/async-storage'
+
+import config, { user, setUser } from './config'
 
 const Drawer = createDrawerNavigator();
 
@@ -103,7 +105,7 @@ const App = () => {
       let success = false;
       let errorMessage = 'Fields are empty!';
       if (userName.length != 0 && password.length != 0 ) {
-        const response = await fetch(apiUrl+'/auth/login', {
+        const response = await fetch(config.API_URL+'auth/login', {
           method: 'POST',
           headers: {
             Accept: 'application/json',
@@ -171,7 +173,7 @@ const App = () => {
         errorMessage = 'Fields are empty!';
       }
       if (userName.length != 0 && password.length != 0 && password == confirm_password) {
-        const response = await fetch(apiUrl+'/auth/register', {
+        const response = await fetch(config.API_URL+'auth/register', {
           method: 'POST',
           headers: {
             Accept: 'application/json',

@@ -6,11 +6,13 @@ import { useTheme } from '@react-navigation/native';
 
 import configColors from '../config/colors';
 import styles from '../config/styles';
+import colors from '../config/colors';
+
+import { user } from '../config'
 
 const ProfileScreen = () => {
-
+    const {colors} = useTheme();
     const theme = useTheme();
-    //const { colors } = useTheme();
 
     return (
       <View style={styles().containerm}>
@@ -19,9 +21,9 @@ const ProfileScreen = () => {
             </View>
             <View style={styles().bodym} backgroundColor={theme.dark ? '#1c1c1c' : '#fff'} padding={20}>
                 <View>
-                    <Text>Email address: Evaldas.Grublys@gmail.com</Text>
-                    <Text>Username: Evaldas</Text>
-                    <Text>Joined: 2020-11-27 8:30:59</Text>
+                    <Text style={{color: colors.text}}>Email address: Evaldas.Grublys@gmail.com</Text>
+                    <Text style={{color: colors.text}}>Username: {user.username}</Text>
+                    <Text style={{color: colors.text}}>Joined: 2020-11-27 8:30:59</Text>
                     <Button title="Change password"/>
                 </View>
             </View>
