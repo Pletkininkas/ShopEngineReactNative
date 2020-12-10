@@ -6,7 +6,7 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import { useTheme } from '@react-navigation/native';
 
 import HomeScreen from './HomeScreen'
-import ScanScreen from './ScanScreen'
+import ScanScreen from './ScanScreen/ScanScreen'
 import NewListScreen from './NewListScreen'
 
 import configColors from '../config/colors'
