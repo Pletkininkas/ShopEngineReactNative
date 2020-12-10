@@ -5,10 +5,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
-import { Swipeable } from 'react-native-gesture-handler';
-import SwipeRow from '../components/SwipeRow'
 import {Asset} from 'expo-asset'
+import {SwipeListView} from 'react-native-swipe-list-view'
 import config from '../config'
+
+
 
 
 
@@ -30,10 +31,14 @@ const ScanScreen = ({ navigation }) => {
     const[showFailMsg, setShowFailMsg] = useState(false);
     const[showCompareList, setShowCompareList] = useState(false);
     const[compareList, setCompareList] = useState(null)
+    const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
+    const[isPickingPhotoMethod, setIsPickingPhotoMethod] = useState(true)
     
     
 
     const theme = useTheme();
+    const faceUri = Asset.fromModule(require('../assets/sadface.png')).uri;
+    const whiteFaceUri = Asset.fromModule(require('../assets/sadfacewhite.png')).uri;
     const shops = [
         {key: 'IKI', id:1, uri:Asset.fromModule(require('../assets/shop_logos/IKI.png')).uri},
         {key: 'MAXIMA', id:2, uri:Asset.fromModule(require('../assets/shop_logos/MAXIMA.png')).uri},
@@ -54,15 +59,16 @@ const ScanScreen = ({ navigation }) => {
             setShowFailMsg(false)
             setShowCompareList(false)
             setCompareList(null)
+            setIsEmptyComparedList(false)
+            setIsPickingPhotoMethod(true)
 
-            _pickCameraImage.call();
         });
 
         return unsubscribe;
     }, [navigation]);
 
 
-    const _pickCameraImage = async () => {
+    const _takePhotoAsync = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA)
         if (status === 'granted') {
             const result = await ImagePicker.launchCameraAsync()
@@ -71,12 +77,33 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
+                setIsPickingPhotoMethod(false)
+                setSelectingShop(true)     
+                    
+                //selectedItem = scannedShop id
+                     
+            }else{
+                navigation.navigate('Home');
+            } 
+        }
+    };
+
+    const _pickPhotoAsync = async () => {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL)
+        if (status === 'granted') {
+            const result = await ImagePicker.launchImageLibraryAsync()
+
+            if (!result.cancelled) {
+                // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
+                // set state to picking shop and pre-selected shop to scanned shop 
+                setUri(result.uri)
+                setIsPickingPhotoMethod(false)
                 setSelectingShop(true)      
                     
                 //selectedItem = scannedShop id
                      
             }else{
-                navigation.goBack();
+                navigation.navigate('Home');
             } 
         }
     };
@@ -87,129 +114,22 @@ const ScanScreen = ({ navigation }) => {
             setSelectingShop(false)
             setShowModal(true)
         }else{
-            if (Platform.OS === 'android') {
-                ToastAndroid.show('Please select the shop', ToastAndroid.SHORT)
-            } else {
-                Alert.alert('Please select the shop');
-            }
+            _showToast('Please select the shop')
         }
     }
 
+    const _showToast = (message) =>
+    {
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(message, ToastAndroid.SHORT)
+        } else {
+            Alert.alert(message);
+        }
+    }
 
     const _readImage = async (par) =>{
         setUri(par.uri)
         setLoadingMsg('Reading image...')
-        /*setShowList(true);
-        setScannedList([
-            {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:0
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:1
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:2
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:3
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:4
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:5
-                },
-                {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:6
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:7
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:8
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:9
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:10
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:11
-                },
-                {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:12
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:13
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:14
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:15
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:16
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:17
-                },
-        ])*/
 
         let datajson = await _getScannedListAsync(par.uri);
         var data = []
@@ -256,6 +176,12 @@ const ScanScreen = ({ navigation }) => {
     const _onListConfirmPress = async () =>
     {
         // save the products to history and compare them to other shops
+
+        if(scannedList.length <= 0){
+            _showToast("No products to compare!")
+            navigation.navigate('Home');
+            return
+        }
         setShowList(false)
         setLoadingMsg('Comparing prices...')
         let result = await _getBetterPricedItemsAsync();
@@ -264,15 +190,20 @@ const ScanScreen = ({ navigation }) => {
             data.push(result[i])
             data[i].id = i
         }
-    
-        setCompareList(data)
-        setShowCompareList(true)
+
+        if(data.length <= 0){
+            setShowFailMsg(true)
+            setIsEmptyComparedList(true)
+        }else{
+            setCompareList(data)
+            setShowCompareList(true)
+        }
     }
 
     const _getBetterPricedItemsAsync = async () => {
         try {
             let response = await fetch(
-              config.API_URL + 'ocr/compare', {
+                config.API_URL + 'ocr/compare', {
               method: 'POST',
               headers: {
                   Accept: "application/json",
@@ -384,24 +315,31 @@ const ScanScreen = ({ navigation }) => {
                     }
                 </View>
             )
-        }
-        else if(showList){
+                }
+            else if(showList){
             return (
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                    <FlatList style={{width:'100%', marginBottom:80}}
+                    <SwipeListView style={{width:'100%', marginBottom:80}}
                        // extraData={state}
+                        disableRightSwipe
                         data={scannedList}
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
-                            <SwipeRow item = {item} key = {item.id} onSwipe={() => delFromArr(item.id)} swipeThreshold={-200}>
                                 <View style={styles.productItem}>
                                     <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
                                     <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
                                     <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
                                 </View>
-                            </SwipeRow>
                         )}
+                        renderHiddenItem={ ({item}) => (
+                            <View style={[styles.productItem, {backgroundColor:'indianred'}]}>
+                                <TouchableOpacity style={styles.backRightBtn} onPress={() => delFromArr(item.id)}>
+                                    <Ionicons name='ios-trash' size={50}/>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        rightOpenValue={-75}
                         />
                     </View>
                     <View style={styles.buttonOnBot}>
@@ -424,8 +362,8 @@ const ScanScreen = ({ navigation }) => {
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
                             <View style={[styles.productItem, {alignItems:'center', justifyContent:'center'}]}>
-                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'bold',color:'darkred'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
-                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:2, fontWeight:'bold'}}>{item.price.toFixed(2)} €</Text>
+                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'normal',color:'black'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
+                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:3, fontWeight:'bold'}}><Text style={{fontWeight:'bold',color:'green'}}>{(item.price - item.worsePrice).toFixed(2)} €</Text>   in</Text>
                                 <Image style={{marginLeft:'auto', flex:2, width:40, height:40, resizeMode:'contain'}} resizeMethod="resize" source={{uri:shops[getShopId(item.shop)-1].uri}} />
                             </View>
                         )}
@@ -441,13 +379,38 @@ const ScanScreen = ({ navigation }) => {
                 </View>
             )
         }
+        else if(isPickingPhotoMethod){
+            return(
+                <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                        <TouchableOpacity style={{width:'80%', marginBottom:20}} onPress={() => _takePhotoAsync()}>
+                            <View style={[styles.btnStyle, {flexDirection:'row'}]}>
+                                <Ionicons name='ios-camera' size={50} style={{marginRight:15}}/>
+                                <Text style={{color: 'white',fontWeight:'bold'}}>Take a photo</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <Text style={{alignItems:'center', justifyContent:'center', fontSize:24, color:theme.dark ? 'white' : 'black'}}>OR</Text>
+
+                        <TouchableOpacity style={{width:'80%', marginTop:20}} onPress={() => _pickPhotoAsync()}>
+                            <View style={[styles.btnStyle, {flexDirection:'row'}]}>
+                                <Ionicons name='ios-image' size={50} style={{marginRight:15}}/>
+                                <Text style = {{color: 'white',fontWeight:'bold'}}>Pick a photo from gallery</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )
+        }
         else if(showFailMsg){
             return(
-            <View style={styles.container}>
+                <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <Image style={{width:128, height:128}} source={require('../assets/sadface.png')}/>
+                        <Image style={{width:128, height:128}} source={{uri:theme.dark ? whiteFaceUri : faceUri}}/>
+                        {isEmptyComparedList ? <Text style={{color:'red', margin:50, textAlign:'center'}}> Couldn't find any better prices in other shops!</Text>
+                        :
                         <Text style={{color:'red', margin:50, textAlign:'center'}}> Couldn't find any products. {"\n"}{"\n"} Please try taking a better
-                        photo of the receipt and crop only the products and their prices. </Text>
+                        photo of the receipt and crop only the products and their prices. </Text>}
                     </View>
                 </View>
             )
@@ -470,6 +433,12 @@ export default ScanScreen;
 
 
 const styles = StyleSheet.create({
+    backRightBtn: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 'auto',
+        width: 40,
+    },
     container: {
         flex: 1,
         flexGrow: 1,
