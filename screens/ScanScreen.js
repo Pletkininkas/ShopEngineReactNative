@@ -31,10 +31,13 @@ const ScanScreen = ({ navigation }) => {
     const[showFailMsg, setShowFailMsg] = useState(false);
     const[showCompareList, setShowCompareList] = useState(false);
     const[compareList, setCompareList] = useState(null)
+    const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
     
     
 
     const theme = useTheme();
+    const faceUri = Asset.fromModule(require('../assets/sadface.png')).uri;
+    const whiteFaceUri = Asset.fromModule(require('../assets/sadfacewhite.png')).uri;
     const shops = [
         {key: 'IKI', id:1, uri:Asset.fromModule(require('../assets/shop_logos/IKI.png')).uri},
         {key: 'MAXIMA', id:2, uri:Asset.fromModule(require('../assets/shop_logos/MAXIMA.png')).uri},
@@ -55,6 +58,7 @@ const ScanScreen = ({ navigation }) => {
             setShowFailMsg(false)
             setShowCompareList(false)
             setCompareList(null)
+            setIsEmptyComparedList(false)
 
             _pickCameraImage.call();
         });
@@ -77,7 +81,7 @@ const ScanScreen = ({ navigation }) => {
                 //selectedItem = scannedShop id
                      
             }else{
-                navigation.goBack();
+                navigation.navigate('Home');
             } 
         }
     };
@@ -88,129 +92,22 @@ const ScanScreen = ({ navigation }) => {
             setSelectingShop(false)
             setShowModal(true)
         }else{
-            if (Platform.OS === 'android') {
-                ToastAndroid.show('Please select the shop', ToastAndroid.SHORT)
-            } else {
-                Alert.alert('Please select the shop');
-            }
+            _showToast('Please select the shop')
         }
     }
 
+    const _showToast = (message) =>
+    {
+        if (Platform.OS === 'android') {
+            ToastAndroid.show(message, ToastAndroid.SHORT)
+        } else {
+            Alert.alert(message);
+        }
+    }
 
     const _readImage = async (par) =>{
         setUri(par.uri)
         setLoadingMsg('Reading image...')
-        /*setShowList(true);
-        setScannedList([
-            {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:0
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:1
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:2
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:3
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:4
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:5
-                },
-                {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:6
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:7
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:8
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:9
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:10
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:11
-                },
-                {
-                name: 'Obuoliai',
-                price: 2.58,
-                discount: -0.36,
-                id:12
-                },
-                {
-                name: 'Bananai',
-                price: 0.99,
-                discount: -0.21,
-                id:13
-                },
-                {
-                    name: 'Dvaro pienas 15%',
-                    price: 2.49,
-                    discount: null,
-                    id:14
-                },
-                {
-                    name: 'Vilniaus duona juoda',
-                    price: 0.59,
-                    discount: null,
-                    id:15
-                },
-                {
-                    name: 'Ananasas',
-                    price: 3.39,
-                    discount: null,
-                    id:16
-                },
-                {
-                    name: 'Šokoladas MILKA',
-                    price: 2.99,
-                    discount: -0.17,
-                    id:17
-                },
-        ])*/
 
         let datajson = await _getScannedListAsync(par.uri);
         var data = []
@@ -257,6 +154,12 @@ const ScanScreen = ({ navigation }) => {
     const _onListConfirmPress = async () =>
     {
         // save the products to history and compare them to other shops
+
+        if(scannedList.length <= 0){
+            _showToast("No products to compare!")
+            navigation.navigate('Home');
+            return
+        }
         setShowList(false)
         setLoadingMsg('Comparing prices...')
         let result = await _getBetterPricedItemsAsync();
@@ -265,9 +168,14 @@ const ScanScreen = ({ navigation }) => {
             data.push(result[i])
             data[i].id = i
         }
-    
-        setCompareList(data)
-        setShowCompareList(true)
+
+        if(data.length <= 0){
+            setShowFailMsg(true)
+            setIsEmptyComparedList(true)
+        }else{
+            setCompareList(data)
+            setShowCompareList(true)
+        }
     }
 
     const _getBetterPricedItemsAsync = async () => {
@@ -451,11 +359,13 @@ const ScanScreen = ({ navigation }) => {
         }
         else if(showFailMsg){
             return(
-            <View style={styles.container}>
+                <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <Image style={{width:128, height:128}} source={require('../assets/sadface.png')}/>
+                        <Image style={{width:128, height:128}} source={{uri:theme.dark ? whiteFaceUri : faceUri}}/>
+                        {isEmptyComparedList ? <Text style={{color:'red', margin:50, textAlign:'center'}}> Couldn't find any better prices in other shops!</Text>
+                        :
                         <Text style={{color:'red', margin:50, textAlign:'center'}}> Couldn't find any products. {"\n"}{"\n"} Please try taking a better
-                        photo of the receipt and crop only the products and their prices. </Text>
+                        photo of the receipt and crop only the products and their prices. </Text>}
                     </View>
                 </View>
             )
