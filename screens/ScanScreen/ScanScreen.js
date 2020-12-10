@@ -7,7 +7,9 @@ import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
-import config from '../config'
+import config from '../../config'
+import styles from './styles.js'
+import State from './state.js'
 
 
 
@@ -19,49 +21,38 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 
 
 const ScanScreen = ({ navigation }) => {
-    const[showModal, setShowModal] = useState(false)
     const[uri, setUri] = useState(null)
-    const[isLoading, setIsLoading] = useState(true)
     const[loadingMsg, setLoadingMsg] = useState('Please wait')
-    const[selectingShop, setSelectingShop] = useState(false)
     const[shop, setShop] = useState('')
     const[selectedItem, setSelectedItem] = useState(null)
     const[scannedList, setScannedList] = useState([])
-    const[showList, setShowList] = useState(false);
-    const[showFailMsg, setShowFailMsg] = useState(false);
-    const[showCompareList, setShowCompareList] = useState(false);
     const[compareList, setCompareList] = useState(null)
     const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
-    const[isPickingPhotoMethod, setIsPickingPhotoMethod] = useState(true)
+    const[screenState, setScreenState] = useState(State.ScreenState.pickingPhotoMethod)
     
     
 
     const theme = useTheme();
-    const faceUri = Asset.fromModule(require('../assets/sadface.png')).uri;
-    const whiteFaceUri = Asset.fromModule(require('../assets/sadfacewhite.png')).uri;
+    const faceUri = Asset.fromModule(require('../../assets/sadface.png')).uri;
+    const whiteFaceUri = Asset.fromModule(require('../../assets/sadfacewhite.png')).uri;
     const shops = [
-        {key: 'IKI', id:1, uri:Asset.fromModule(require('../assets/shop_logos/IKI.png')).uri},
-        {key: 'MAXIMA', id:2, uri:Asset.fromModule(require('../assets/shop_logos/MAXIMA.png')).uri},
-        {key: 'LIDL', id:3, uri:Asset.fromModule(require('../assets/shop_logos/LIDL.png')).uri},
-        {key: 'NORFA', id:4, uri:Asset.fromModule(require('../assets/shop_logos/NORFA.png')).uri},
-        {key: 'RIMI', id:5, uri:Asset.fromModule(require('../assets/shop_logos/RIMI.png')).uri},
+        {key: 'IKI', id:1, uri:Asset.fromModule(require('../../assets/shop_logos/IKI.png')).uri},
+        {key: 'MAXIMA', id:2, uri:Asset.fromModule(require('../../assets/shop_logos/MAXIMA.png')).uri},
+        {key: 'LIDL', id:3, uri:Asset.fromModule(require('../../assets/shop_logos/LIDL.png')).uri},
+        {key: 'NORFA', id:4, uri:Asset.fromModule(require('../../assets/shop_logos/NORFA.png')).uri},
+        {key: 'RIMI', id:5, uri:Asset.fromModule(require('../../assets/shop_logos/RIMI.png')).uri},
     ]
 
 
      useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
             setShop('')
-            setShowList(false)
-            setIsLoading(true)
-            setSelectingShop(false)
             setLoadingMsg('Please wait')
             setSelectedItem(null)
-            setShowFailMsg(false)
-            setShowCompareList(false)
             setCompareList(null)
             setIsEmptyComparedList(false)
-            setIsPickingPhotoMethod(true)
-
+            setScreenState(State.ScreenState.pickingPhotoMethod)
+            
         });
 
         return unsubscribe;
@@ -77,8 +68,7 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
-                setIsPickingPhotoMethod(false)
-                setSelectingShop(true)     
+                setScreenState(State.ScreenState.selectingShop)    
                     
                 //selectedItem = scannedShop id
                      
@@ -97,8 +87,7 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
-                setIsPickingPhotoMethod(false)
-                setSelectingShop(true)      
+                setScreenState(State.ScreenState.pickingPhotoMethod)   
                     
                 //selectedItem = scannedShop id
                      
@@ -111,8 +100,7 @@ const ScanScreen = ({ navigation }) => {
     const _onShopConfirmPress = () =>
     {
         if(shop != ''){
-            setSelectingShop(false)
-            setShowModal(true)
+            setScreenState(State.ScreenState.showCrop)
         }else{
             _showToast('Please select the shop')
         }
@@ -130,6 +118,7 @@ const ScanScreen = ({ navigation }) => {
     const _readImage = async (par) =>{
         setUri(par.uri)
         setLoadingMsg('Reading image...')
+        setScreenState(State.ScreenState.showLoading)
 
         let datajson = await _getScannedListAsync(par.uri);
         var data = []
@@ -140,14 +129,14 @@ const ScanScreen = ({ navigation }) => {
         }
         try{
             if(data.length < 1){
-                setShowFailMsg(true);
+                setScreenState(State.ScreenState.showFailMsg)
             }else{
                 setScannedList(data)
-                setShowList(true)
+                setScreenState(State.ScreenState.showList)
             }
         }catch(error){
             console.log(error)
-            setShowFailMsg(true);
+            setScreenState(State.ScreenState.showFailMsg)
         }
         
     }
@@ -182,7 +171,7 @@ const ScanScreen = ({ navigation }) => {
             navigation.navigate('Home');
             return
         }
-        setShowList(false)
+        setScreenState(State.ScreenState.showLoading)
         setLoadingMsg('Comparing prices...')
         let result = await _getBetterPricedItemsAsync();
         let data = []
@@ -192,11 +181,11 @@ const ScanScreen = ({ navigation }) => {
         }
 
         if(data.length <= 0){
-            setShowFailMsg(true)
+            setScreenState(State.ScreenState.showFailMsg)
             setIsEmptyComparedList(true)
         }else{
             setCompareList(data)
-            setShowCompareList(true)
+            setScreenState(State.ScreenState.showCompareList)
         }
     }
 
@@ -250,50 +239,52 @@ const ScanScreen = ({ navigation }) => {
           console.error('ERROR:' + error);
         }
       };
-
-        if(selectingShop){
-            return(
-                <View style={styles.container}>
-                    <View style={styles.body}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <View style={{alignItems: 'center', justifyContent: 'center', marginTop:30}}>
-                            <Text style={styles.titleText}>Please select the shop</Text>
-                        </View>
-                        
-                        <View style={{marginTop:40}}>
-                            <FlatList
-                           // extraData={state}
-                            data={shops}
-                            renderItem={({item}) => (
-                                <TouchableOpacity onPress={() => {
-                                    setSelectedItem(item.id)
-                                    setShop(item.key)
-                                    }}>
-                                    <Text 
-                                    style={selectedItem === item.id ? styles.selectedItem : styles.item}
-                                    >{item.key}</Text>
+      
+        const {selectingShop, showList, showCompareList, showLoading, showFailMsg, pickingPhotoMethod, showCrop} = State.ScreenState;
+        switch (screenState){
+            case selectingShop:
+                return(
+                    <View style={styles.container}>
+                        <View style={styles.body}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                            <View style={{alignItems: 'center', justifyContent: 'center', marginTop:30}}>
+                                <Text style={styles.titleText}>Please select the shop</Text>
+                            </View>
+                            
+                            <View style={{marginTop:40}}>
+                                <FlatList
+                            // extraData={state}
+                                data={shops}
+                                renderItem={({item}) => (
+                                    <TouchableOpacity onPress={() => {
+                                        setSelectedItem(item.id)
+                                        setShop(item.key)
+                                        }}>
+                                        <Text 
+                                        style={selectedItem === item.id ? styles.selectedItem : styles.item}
+                                        >{item.key}</Text>
+                                    </TouchableOpacity>
+                                )}
+                                />
+                            </View>
+                            
+                            <View style={styles.buttonOnBot}>
+                                <TouchableOpacity style={{width:'100%'}} onPress={() => _onShopConfirmPress()}>
+                                    <View style={styles.btnStyle}>
+                                        <Text style = {{color: 'white'}}>Confirm</Text>
+                                    </View>
                                 </TouchableOpacity>
-                            )}
-                            />
+                            </View>
+                            
                         </View>
-                        
-                        <View style={styles.buttonOnBot}>
-                            <TouchableOpacity style={{width:'100%'}} onPress={() => _onShopConfirmPress()}>
-                                <View style={styles.btnStyle}>
-                                    <Text style = {{color: 'white'}}>Confirm</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                        
                     </View>
-                </View>
-                
-            )
-        }
-        else if(showModal){
+                    
+                )
+        
+        case showCrop:
             return (
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
+                        <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
                         <Text style={{color:'green'}}> {loadingMsg} </Text>
                     </View>           
                     {
@@ -301,9 +292,9 @@ const ScanScreen = ({ navigation }) => {
                     && (
                         <ExpoImageManipulator
                             photo={{ uri }}
-                            isVisible={showModal}
+                            isVisible={true}
                             onPictureChoosed={(data) => _readImage(data)}
-                            onToggleModal={() => setShowModal(!showModal)}
+                            onToggleModal={() => {}}
                             saveOptions={{
                                 compress: 1,
                                 format: 'jpeg',
@@ -315,44 +306,44 @@ const ScanScreen = ({ navigation }) => {
                     }
                 </View>
             )
-                }
-            else if(showList){
-            return (
-                <View style={styles.container}>
-                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                    <SwipeListView style={{width:'100%', marginBottom:80}}
-                       // extraData={state}
-                        disableRightSwipe
-                        data={scannedList}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({item}) => (
-                                <View style={styles.productItem}>
-                                    <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
-                                    <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
-                                    <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
-                                </View>
-                        )}
-                        renderHiddenItem={ ({item}) => (
-                            <View style={[styles.productItem, {backgroundColor:'indianred'}]}>
-                                <TouchableOpacity style={styles.backRightBtn} onPress={() => delFromArr(item.id)}>
-                                    <Ionicons name='ios-trash' size={50}/>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                        rightOpenValue={-75}
-                        />
-                    </View>
-                    <View style={styles.buttonOnBot}>
-                            <TouchableOpacity style={{width:'95%'}} onPress={() => _onListConfirmPress()}>
-                                <View style={styles.btnStyle}>
-                                    <Text style = {{color: 'white'}}>Confirm</Text>
-                                </View>
-                            </TouchableOpacity>
-                    </View>
-                </View>
                 
-            )
-        }else if(showCompareList){
+            case showList:
+                return (
+                    <View style={styles.container}>
+                        <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                        <SwipeListView style={{width:'100%', marginBottom:80}}
+                        // extraData={state}
+                            disableRightSwipe
+                            data={scannedList}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({item}) => (
+                                    <View style={styles.productItem}>
+                                        <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
+                                        <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
+                                        <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
+                                    </View>
+                            )}
+                            renderHiddenItem={ ({item}) => (
+                                <View style={[styles.productItem, {backgroundColor:'indianred'}]}>
+                                    <TouchableOpacity style={styles.backRightBtn} onPress={() => delFromArr(item.id)}>
+                                        <Ionicons name='ios-trash' size={50}/>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            rightOpenValue={-75}
+                            />
+                        </View>
+                        <View style={styles.buttonOnBot}>
+                                <TouchableOpacity style={{width:'95%'}} onPress={() => _onListConfirmPress()}>
+                                    <View style={styles.btnStyle}>
+                                        <Text style = {{color: 'white'}}>Confirm</Text>
+                                    </View>
+                                </TouchableOpacity>
+                        </View>
+                    </View>
+                    
+                )
+        case showCompareList:
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
@@ -378,8 +369,8 @@ const ScanScreen = ({ navigation }) => {
                     </View>
                 </View>
             )
-        }
-        else if(isPickingPhotoMethod){
+        
+        case pickingPhotoMethod:
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
@@ -401,8 +392,7 @@ const ScanScreen = ({ navigation }) => {
                     </View>
                 </View>
             )
-        }
-        else if(showFailMsg){
+        case showFailMsg:
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
@@ -414,105 +404,17 @@ const ScanScreen = ({ navigation }) => {
                     </View>
                 </View>
             )
-        }
-        else{
+        default:
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
+                        <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
                         <Text style={{color:'green'}}> {loadingMsg} </Text>
                     </View>
                 </View>
             )
-        }
         
     }
 
-
+}
 export default ScanScreen;
-
-
-const styles = StyleSheet.create({
-    backRightBtn: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: 'auto',
-        width: 40,
-    },
-    container: {
-        flex: 1,
-        flexGrow: 1,
-        backgroundColor: '#1db954',
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowOffset: {
-            width: 0,
-            height: 1,
-        },
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
-        paddingTop: 10,
-        paddingBottom: 0
-    },
-    body: {
-        flex: 0,
-        flexGrow: 1,
-        flexDirection: "column",
-        height: '100%',
-        width: '95%',
-        borderTopRightRadius: 10,
-        borderTopLeftRadius: 10,
-        borderColor: '#000'
-    },
-    buttonOnBot:{
-        position: 'absolute',
-        bottom: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%'
-        
-    },
-    btnStyle:{
-        backgroundColor: '#1db954',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 15,
-        padding: 15,
-        marginLeft: 10,
-        marginRight: 10
-    },
-    scannedImg:{
-        flex:1,
-        resizeMode:"contain"
-    },
-    titleText:{
-        fontSize: 20,
-        color:'#1db954'
-    },
-    item: {
-        backgroundColor: '#1db954',
-        padding: 20,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        borderRadius: 10
-      },
-    selectedItem: {
-        backgroundColor: '#0a421e',
-        padding: 20,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        borderRadius: 10
-    },
-    productItem:{
-        flex:1,
-        flexDirection:'row',
-        backgroundColor: '#dce0dd',
-        padding: 20,
-        marginVertical: 4,
-        marginHorizontal: 16,
-        borderRadius: 10
-    },
-
-});
-
