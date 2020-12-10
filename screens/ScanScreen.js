@@ -32,6 +32,7 @@ const ScanScreen = ({ navigation }) => {
     const[showCompareList, setShowCompareList] = useState(false);
     const[compareList, setCompareList] = useState(null)
     const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
+    const[isPickingPhotoMethod, setIsPickingPhotoMethod] = useState(true)
     
     
 
@@ -59,15 +60,15 @@ const ScanScreen = ({ navigation }) => {
             setShowCompareList(false)
             setCompareList(null)
             setIsEmptyComparedList(false)
+            setIsPickingPhotoMethod(true)
 
-            _pickCameraImage.call();
         });
 
         return unsubscribe;
     }, [navigation]);
 
 
-    const _pickCameraImage = async () => {
+    const _takePhotoAsync = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA)
         if (status === 'granted') {
             const result = await ImagePicker.launchCameraAsync()
@@ -76,6 +77,27 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
+                setIsPickingPhotoMethod(false)
+                setSelectingShop(true)     
+                    
+                //selectedItem = scannedShop id
+                     
+            }else{
+                navigation.navigate('Home');
+            } 
+        }
+    };
+
+    const _pickPhotoAsync = async () => {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL)
+        if (status === 'granted') {
+            const result = await ImagePicker.launchImageLibraryAsync()
+
+            if (!result.cancelled) {
+                // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
+                // set state to picking shop and pre-selected shop to scanned shop 
+                setUri(result.uri)
+                setIsPickingPhotoMethod(false)
                 setSelectingShop(true)      
                     
                 //selectedItem = scannedShop id
@@ -353,6 +375,29 @@ const ScanScreen = ({ navigation }) => {
                                 </View>
                             </TouchableOpacity>
                          </View>
+                    </View>
+                </View>
+            )
+        }
+        else if(isPickingPhotoMethod){
+            return(
+                <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                        <TouchableOpacity style={{width:'80%', marginBottom:20}} onPress={() => _takePhotoAsync()}>
+                            <View style={[styles.btnStyle, {flexDirection:'row'}]}>
+                                <Ionicons name='ios-camera' size={50} style={{marginRight:15}}/>
+                                <Text style={{color: 'white',fontWeight:'bold'}}>Take a photo</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <Text style={{alignItems:'center', justifyContent:'center', fontSize:24, color:theme.dark ? 'white' : 'black'}}>OR</Text>
+
+                        <TouchableOpacity style={{width:'80%', marginTop:20}} onPress={() => _pickPhotoAsync()}>
+                            <View style={[styles.btnStyle, {flexDirection:'row'}]}>
+                                <Ionicons name='ios-image' size={50} style={{marginRight:15}}/>
+                                <Text style = {{color: 'white',fontWeight:'bold'}}>Pick a photo from gallery</Text>
+                            </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
             )
