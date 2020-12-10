@@ -8,7 +8,7 @@ import * as Permissions from 'expo-permissions'
 import { Swipeable } from 'react-native-gesture-handler';
 import SwipeRow from '../components/SwipeRow'
 import {Asset} from 'expo-asset'
-
+import config from '../config'
 
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -271,7 +271,7 @@ const ScanScreen = ({ navigation }) => {
     const _getBetterPricedItemsAsync = async () => {
         try {
             let response = await fetch(
-              'https://7ab43e39b5a7.ngrok.io/ocr/compare', {
+              config.API_URL + 'ocr/compare', {
               method: 'POST',
               headers: {
                   Accept: "application/json",
@@ -302,7 +302,7 @@ const ScanScreen = ({ navigation }) => {
         form.append("scannedPhoto", photo);
         try {
           let response = await fetch(
-            'https://7ab43e39b5a7.ngrok.io/ocr/read', {
+            config.API_URL + 'ocr/read', {
             method: 'POST',
             headers: {
                 Accept: "application/json",
