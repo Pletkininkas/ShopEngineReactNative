@@ -5,10 +5,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
-import { Swipeable } from 'react-native-gesture-handler';
-import SwipeRow from '../components/SwipeRow'
 import {Asset} from 'expo-asset'
+import {SwipeListView} from 'react-native-swipe-list-view'
 import config from '../config'
+
+
+
 
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -271,7 +273,7 @@ const ScanScreen = ({ navigation }) => {
     const _getBetterPricedItemsAsync = async () => {
         try {
             let response = await fetch(
-              config.API_URL + 'ocr/compare', {
+                config.API_URL + 'ocr/compare', {
               method: 'POST',
               headers: {
                   Accept: "application/json",
@@ -383,24 +385,31 @@ const ScanScreen = ({ navigation }) => {
                     }
                 </View>
             )
-        }
-        else if(showList){
+                }
+            else if(showList){
             return (
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                    <FlatList style={{width:'100%', marginBottom:80}}
+                    <SwipeListView style={{width:'100%', marginBottom:80}}
                        // extraData={state}
+                        disableRightSwipe
                         data={scannedList}
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
-                            <SwipeRow item = {item} key = {item.id} onSwipe={() => delFromArr(item.id)} swipeThreshold={-200}>
                                 <View style={styles.productItem}>
                                     <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
                                     <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
                                     <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
                                 </View>
-                            </SwipeRow>
                         )}
+                        renderHiddenItem={ ({item}) => (
+                            <View style={[styles.productItem, {backgroundColor:'indianred'}]}>
+                                <TouchableOpacity style={styles.backRightBtn} onPress={() => delFromArr(item.id)}>
+                                    <Ionicons name='ios-trash' size={50}/>
+                                </TouchableOpacity>
+                            </View>
+                        )}
+                        rightOpenValue={-75}
                         />
                     </View>
                     <View style={styles.buttonOnBot}>
@@ -423,8 +432,8 @@ const ScanScreen = ({ navigation }) => {
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
                             <View style={[styles.productItem, {alignItems:'center', justifyContent:'center'}]}>
-                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'bold',color:'darkred'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
-                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:2, fontWeight:'bold'}}>{item.price.toFixed(2)} €</Text>
+                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'normal',color:'black'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
+                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:3, fontWeight:'bold'}}><Text style={{fontWeight:'bold',color:'green'}}>{(item.price - item.worsePrice).toFixed(2)} €</Text>   in</Text>
                                 <Image style={{marginLeft:'auto', flex:2, width:40, height:40, resizeMode:'contain'}} resizeMethod="resize" source={{uri:shops[getShopId(item.shop)-1].uri}} />
                             </View>
                         )}
@@ -469,6 +478,12 @@ export default ScanScreen;
 
 
 const styles = StyleSheet.create({
+    backRightBtn: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 'auto',
+        width: 40,
+    },
     container: {
         flex: 1,
         flexGrow: 1,
