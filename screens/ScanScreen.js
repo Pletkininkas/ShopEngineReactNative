@@ -7,7 +7,7 @@ import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn
 import * as Permissions from 'expo-permissions'
 import { Swipeable } from 'react-native-gesture-handler';
 import SwipeRow from '../components/SwipeRow'
-
+import {Asset} from 'expo-asset'
 import config from '../config'
 
 
@@ -28,16 +28,20 @@ const ScanScreen = ({ navigation }) => {
     const[scannedList, setScannedList] = useState([])
     const[showList, setShowList] = useState(false);
     const[showFailMsg, setShowFailMsg] = useState(false);
+    const[showCompareList, setShowCompareList] = useState(false);
+    const[compareList, setCompareList] = useState(null)
+    
     
 
     const theme = useTheme();
     const shops = [
-        {key: 'IKI', id:1},
-        {key: 'MAXIMA', id:2},
-        {key: 'LIDL', id:3},
-        {key: 'NORFA', id:4},
-        {key: 'RIMI', id:5}
+        {key: 'IKI', id:1, uri:Asset.fromModule(require('../assets/shop_logos/IKI.png')).uri},
+        {key: 'MAXIMA', id:2, uri:Asset.fromModule(require('../assets/shop_logos/MAXIMA.png')).uri},
+        {key: 'LIDL', id:3, uri:Asset.fromModule(require('../assets/shop_logos/LIDL.png')).uri},
+        {key: 'NORFA', id:4, uri:Asset.fromModule(require('../assets/shop_logos/NORFA.png')).uri},
+        {key: 'RIMI', id:5, uri:Asset.fromModule(require('../assets/shop_logos/RIMI.png')).uri},
     ]
+
 
      useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -48,6 +52,8 @@ const ScanScreen = ({ navigation }) => {
             setLoadingMsg('Please wait')
             setSelectedItem(null)
             setShowFailMsg(false)
+            setShowCompareList(false)
+            setCompareList(null)
 
             _pickCameraImage.call();
         });
@@ -210,6 +216,7 @@ const ScanScreen = ({ navigation }) => {
         for(var i in datajson){
             data.push(datajson[i])
             data[i].id = i
+            data[i].shop = shop
         }
         try{
             if(data.length < 1){
@@ -232,11 +239,55 @@ const ScanScreen = ({ navigation }) => {
         
     }
 
-    const _onListConfirmPress = () =>
+    function getShopId(shopName){
+        for (var i = 0; i < shops.length; i++){
+            if(shops[i].key === shopName){
+                return shops[i].id;
+            }
+        }
+        return 1;
+    }
+
+    const _onCompareListConfirm = async () =>
+    {
+        navigation.navigate('Home');
+    }
+
+    const _onListConfirmPress = async () =>
     {
         // save the products to history and compare them to other shops
         setShowList(false)
         setLoadingMsg('Comparing prices...')
+        let result = await _getBetterPricedItemsAsync();
+        let data = []
+        for(var i in result){
+            data.push(result[i])
+            data[i].id = i
+        }
+    
+        setCompareList(data)
+        setShowCompareList(true)
+    }
+
+    const _getBetterPricedItemsAsync = async () => {
+        try {
+            let response = await fetch(
+              config.API_URL + 'ocr/compare', {
+              method: 'POST',
+              headers: {
+                  Accept: "application/json",
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(scannedList)
+              }
+            );
+            let json = await response.json();
+            console.log("--------------")
+            console.log(json)
+            return json;
+          } catch (error) {
+            console.error('ERROR:' + error);
+          }
     }
 
     const _getScannedListAsync = async (u) => {
@@ -252,7 +303,7 @@ const ScanScreen = ({ navigation }) => {
         form.append("scannedPhoto", photo);
         try {
           let response = await fetch(
-            config.API_URL+'ocr', {
+            config.API_URL + 'ocr/read', {
             method: 'POST',
             headers: {
                 Accept: "application/json",
@@ -363,7 +414,34 @@ const ScanScreen = ({ navigation }) => {
                 </View>
                 
             )
-        }else if(showFailMsg){
+        }else if(showCompareList){
+            return(
+                <View style={styles.container}>
+                    <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
+                    <FlatList style={{width:'100%', marginBottom:80}}
+                       // extraData={state}
+                        data={compareList}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({item}) => (
+                            <View style={[styles.productItem, {alignItems:'center', justifyContent:'center'}]}>
+                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'bold',color:'darkred'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
+                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:2, fontWeight:'bold'}}>{item.price.toFixed(2)} €</Text>
+                                <Image style={{marginLeft:'auto', flex:2, width:40, height:40, resizeMode:'contain'}} resizeMethod="resize" source={{uri:shops[getShopId(item.shop)-1].uri}} />
+                            </View>
+                        )}
+                        />
+                        <View style={styles.buttonOnBot}>
+                            <TouchableOpacity style={{width:'95%'}} onPress={() => _onCompareListConfirm()}>
+                                <View style={styles.btnStyle}>
+                                    <Text style = {{color: 'white'}}>Continue</Text>
+                                </View>
+                            </TouchableOpacity>
+                         </View>
+                    </View>
+                </View>
+            )
+        }
+        else if(showFailMsg){
             return(
             <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
@@ -465,6 +543,7 @@ const styles = StyleSheet.create({
         marginVertical: 4,
         marginHorizontal: 16,
         borderRadius: 10
-    }
+    },
+
 });
 
