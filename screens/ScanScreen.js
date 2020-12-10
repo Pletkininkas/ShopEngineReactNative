@@ -11,6 +11,7 @@ import {Asset} from 'expo-asset'
 import config from '../config'
 
 
+
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }

@@ -128,7 +128,9 @@ const SignUpScreen = ({ navigation }) => {
                 );
             }
         } else {
-            let errorMessage = 'Passwords do not match.';
+            let errorMessage = 'Password should have atleast one number.';
+            if (password != confirm_password)
+                errorMessage = 'Passwords do not match.';
             if (password.length < 8)
                 errorMessage = 'Password is too short (atleast 8 symbols and 1 numeric character)';
             Alert.alert(
