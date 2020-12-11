@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, Alert, Keyboard } from 'react-native';
+import { View, ActivityIndicator, Alert, Keyboard, StatusBar, StyleSheet } from 'react-native';
 import { 
   NavigationContainer, 
   DefaultTheme as NavigationDefaultTheme,
@@ -7,6 +7,7 @@ import {
 } from '@react-navigation/native';
 
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 import { 
   Provider as PaperProvider, 
@@ -32,8 +33,14 @@ import config, { user, setUser } from './config'
 
 const Drawer = createDrawerNavigator();
 
+/* function sleep(ms) {
+  return new Promise(reslove => setTimeout(reslove, ms));
+} */
+
 const App = () => {
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
+
+  const [screenIsWaiting, setScreenIsWaiting] = React.useState(false);
 
   const initialLoginState = {
     isLoading: true,
@@ -99,6 +106,8 @@ const App = () => {
 
   const authContext = React.useMemo(() => ({
     signIn: async(userName, password) => {
+      setScreenIsWaiting(true);
+      console.log(screenIsWaiting);
       Keyboard.dismiss();
       let userToken;
       userToken = null;
@@ -148,6 +157,7 @@ const App = () => {
           { cancelable: true }
         );
       }
+      setScreenIsWaiting(false);
       dispatch({ type: 'LOGIN', id: userName, token: userToken });
     },
     signOut: async() => {
@@ -233,33 +243,46 @@ const App = () => {
     }, 1000);
   }, []);
 
-  if( loginState.isLoading ) {
+  if( screenIsWaiting ) {
     return(
-      <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-        <ActivityIndicator size="large" />
+      <View style={{flex:1,justifyContent:'center'}}>
+        <Spinner visible={screenIsWaiting}
+                 textContent={'Loading...'}
+                 textStyle={styles.spinnerTextStyle}/>
       </View>
-    );
-  }
+    )
+  } else {
+    
+   };
+
+
   return (
     <PaperProvider theme={theme}>
+      <StatusBar hidden={true} />
     <AuthContext.Provider value={authContext}>
-      <NavigationContainer hideStatusBar={false} theme={theme}>
-        { loginState.userToken != null ? (
-          <Drawer.Navigator hideStatusBar={false} drawerContent={props => <DrawerContent {...props} />}>
-            <Drawer.Screen hideStatusBar={true} name="HomeDrawer" component={MainTabScreen} />
-            <Drawer.Screen hideStatusBar={true} name="ShoppingHistory" component={ShoppingHistoryScreen} />
-            <Drawer.Screen hideStatusBar={true} name="Statistics" component={StatisticsScreen} />
-            <Drawer.Screen hideStatusBar={true} name="Profile" component={ProfileScreen} />
-            <Drawer.Screen hideStatusBar={true} name="Settings" component={SettingsScreen} />
-        </Drawer.Navigator>
-        )
-      :
-        <RootStackScreen  hideStatusBar={true}/>
-      }
-      </NavigationContainer>
+        <NavigationContainer theme={theme}>
+          { loginState.userToken != null ? (
+            <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+              <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
+              <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
+              <Drawer.Screen name="Statistics" component={StatisticsScreen} />
+              <Drawer.Screen name="Profile" component={ProfileScreen} />
+              <Drawer.Screen name="Settings" component={SettingsScreen} />
+          </Drawer.Navigator>
+          )
+        :
+          <RootStackScreen/>
+        }
+        </NavigationContainer>
     </AuthContext.Provider>
     </PaperProvider>
   );
 }
 
 export default App;
+
+const styles = StyleSheet.create({
+  spinnerTextStyle: {
+    color: '#FFF'
+  }
+});
