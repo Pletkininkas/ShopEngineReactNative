@@ -1,41 +1,66 @@
-import React from 'react';
-import { Button, View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Button, View, Text, StyleSheet, Dimensions } from 'react-native';
 import { color } from 'react-native-reanimated';
 import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
-import { LineChart, BarChart, YAxis, XAxis, Grid} from 'react-native-svg-charts'
 import * as scale from 'd3-scale'
-
-
-import configColors from '../config/colors';
+import {
+    LineChart,
+    BarChart
+  } from "react-native-chart-kit";
+import moment from 'moment';
 import styles from '../config/styles';
-import colors from '../config/colors';
+import configColors from '../config/colors';
 import { render } from 'react-dom';
+import config, { user } from '../config';
 
 const StatisticsScreen = () => {
 
-    //const theme = useTheme();
     const {colors} = useTheme();
-    const lineData = [12.4, 25.67, 16.96, 12.4, 25.67, 16.96, 12.4, 25.67, 16.96, 12.4, 25.67, 16.96];
-    const contentInset = { top: 20, bottom: 20 };
 
-    const axesSvg = { fontSize: 10, fill: colors.text };
-    const verticalContentInset = { top: 10, bottom: 10 }
-    const xAxisHeight = 30
+    function getListOfAllMonths() {
+        var currentDate = moment();
+        var startDate = moment().subtract(11, 'months');
+        var months = [];
 
-    const fill = 'rgb(134, 65, 244)';
-    const barData = [
-        {
-            index: 0,
-            value: 23.78,
-            label: 'October'
-        }, 
-        {
-            index: 1,
-            value:16.47,
-            label: 'November'
+        while (startDate <= currentDate) {
+            months.push(startDate.format("MMM"));
+            startDate.add(1, 'months');
         }
-    ];
+        return months;
+    }
+
+
+    var months = getListOfAllMonths();
+
+    const barData = {
+        labels: [months[10], months[11]],
+        datasets: [
+          {
+            data: [20, 45]
+          }
+        ]
+      };
+      const chartConfig = {
+        backgroundGradientFrom: configColors.green,
+        //backgroundGradientFromOpacity: 0,
+        backgroundGradientTo: colors.background,
+        //backgroundGradientToOpacity: 0.5,
+        color: (opacity = 1) => colors.text,
+        //strokeWidth: 10, // optional, default 3
+        barPercentage: 2,
+        useShadowColorFromDataset: false, // optional
+        data: barData.datasets,
+        decimalPlaces: 2, // optional, defaults to 2dp
+        labelColor: (opacity = 1) => colors.text,
+        fillShadowGradient:'skyblue',
+        fillShadowGradientOpacity:1,
+        style: {
+            borderRadius: 16
+        }
+        
+        
+      };
 
     return (
       <View style={styles().containerm}>
@@ -44,72 +69,43 @@ const StatisticsScreen = () => {
           </View>
           <View style={styles().bodym}>
           <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
-          <View style={{ height: 200, padding: 20, flexDirection: 'row'  }}>                           
-                <YAxis
-                    data={lineData}
-                    style={{ marginBottom: xAxisHeight }}
-                    contentInset={verticalContentInset}
-                    svg={axesSvg}
-                    numberOfTicks = {6}
-                    min={0}
+          <LineChart
+            data={{
+                labels: months,
+                datasets: [
+                    {
+                        data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
+                    }
+                ]
+                }}
+                width={Dimensions.get("window").width - 20} // from react-native
+                height={220}
+                yAxisSuffix="€"
+                yAxisInterval={1} // optional, defaults to 1
+                fromZero = "true"
+                verticalLabelRotation={30}
+                chartConfig={chartConfig}
+                // bezier
+                // style={{
+                //     marginVertical: 8,
+                //     borderRadius: 16
+                // }}
                 />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                    <LineChart                        
-                        style={{ flex: 1 }}
-                        data={lineData}
-                        contentInset={verticalContentInset}
-                        svg={{ stroke: colors.text, strokeWidth: 2 }}
-                        gridMin={0}                                                
-                    >
-                        <Grid svg={{stroke: colors.text}}/>
-                    </LineChart>
-                    <XAxis
-                        style={{ marginHorizontal: -10, height: xAxisHeight }}
-                        data={lineData}
-                        formatLabel={(value, index) => index}
-                        contentInset={{ left: 10, right: 10 }}
-                        svg={axesSvg}                        
-                    />
-                </View>
-                </View>
 
                 <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
 
-                <View style={{ height: 200, padding: 20, flexDirection: 'row'  }}>                           
-                <YAxis
+                <BarChart
+                    //style={graphStyle}
                     data={barData}
-                    yAccessor={({ item }) => item.value}
-                    style={{ marginBottom: xAxisHeight }}
-                    contentInset={verticalContentInset}
-                    svg={axesSvg}
-                    numberOfTicks = {6}
-                    min={0}
+                    width={Dimensions.get("window").width - 20}
+                    height={220}
+                    yAxisSuffix="€"
+                    fromZero = "true"
+                    chartConfig={chartConfig}
+                    showValuesOnTopOfBars="true"
+
+                    //verticalLabelRotation={30}
                 />
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                    <BarChart                       
-                        data={barData}
-                        yAccessor={({ item }) => item.value}
-                        contentInset={verticalContentInset}
-                        svg={{ fill: colors.text}}
-                        gridMin={0}
-                        style={{ flex: 1}}
-                        spacingOuter={0.5}
-                        spacingInner={0.5}                                                                                                
-                    >
-                        <Grid svg={{stroke: colors.text}}/>
-                    </BarChart>
-                    <XAxis
-                        style={{ marginHorizontal: -10, height: xAxisHeight }}
-                        data={ barData }
-                        xAccessor={({ index }) => index}                        
-                        scale={scale.scaleBand}
-                        spacingOuter={0.5}
-                        spacingInner={0.3} 
-                        formatLabel={(_, index) => barData[ index ].label}
-                        svg={axesSvg}
-                    />
-                </View>
-                </View>
             </View>             
             
       </View>
