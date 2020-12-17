@@ -55,6 +55,7 @@ const NewListScreen = ({ navigation }) => {
       setChosenShops([]);
       setListShops([]);
       setScreenState(viewingList);
+      _searchProducts("");
     });
     return unsubscribe;
   }, [navigation]);
