@@ -252,31 +252,28 @@ const App = () => {
       </View>
     )
   } else {
-    
-   };
-
-
-  return (
-    <PaperProvider theme={theme}>
-      <StatusBar hidden={true} />
-    <AuthContext.Provider value={authContext}>
-        <NavigationContainer theme={theme}>
-          { loginState.userToken != null ? (
-            <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
-              <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
-              <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
-              <Drawer.Screen name="Statistics" component={StatisticsScreen} />
-              <Drawer.Screen name="Profile" component={ProfileScreen} />
-              <Drawer.Screen name="Settings" component={SettingsScreen} />
-          </Drawer.Navigator>
-          )
-        :
-          <RootStackScreen/>
-        }
-        </NavigationContainer>
-    </AuthContext.Provider>
-    </PaperProvider>
-  );
+    return (
+      <PaperProvider theme={theme}>
+        <StatusBar hidden={true} />
+          <AuthContext.Provider value={authContext}>
+            <NavigationContainer theme={theme}>
+              { loginState.userToken != null ? (
+                <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+                  <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
+                  <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
+                  <Drawer.Screen name="Statistics" component={StatisticsScreen} />
+                  <Drawer.Screen name="Profile" component={ProfileScreen} />
+                  <Drawer.Screen name="Settings" component={SettingsScreen} />
+              </Drawer.Navigator>
+              )
+            :
+              <RootStackScreen/>
+            }
+            </NavigationContainer>
+          </AuthContext.Provider>
+      </PaperProvider>
+    );
+  }
 }
 
 export default App;

@@ -1,393 +1,333 @@
-import React, { Component } from 'react'
-/* import { Card, Icon } from 'react-native-elements' */
+import React, { useState } from 'react'
+import Modal from 'react-native-modal';
 import {
-  FlatList,
   Image,
-  ImageBackground,
-  Linking,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   View,
-  Button,
-  TouchableOpacity
+  TouchableOpacity,
+  TextInput
 } from 'react-native'
-import { color } from 'react-native-reanimated';
-import { Header } from 'react-navigation';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@react-navigation/native';
 
-import configColors from '../config/colors';
-import styles from '../config/styles';
-import colors from '../config/colors';
+import { AuthContext } from '../components/context';
 
 import { user } from '../config'
-/* import PropTypes from 'prop-types' */
 
-/* import Email from './Email'
-import Separator from './Separator'
-import Tel from './Tel' */
+const ProfileScreen = () =>  {
+  const getTheme = useTheme();
+  const textColor = getTheme.dark ? '#fff' : '#000';
 
-const sstyles = StyleSheet.create({
-  cardContainer: {
-    backgroundColor: '#FFF',
-    borderWidth: 0,
-    flex: 1,
-    margin: 0,
-    padding: 0,
-  },
-  container: {
-    flex: 1,
-  },
-  emailContainer: {
-    backgroundColor: '#FFF',
-    flex: 1,
-    paddingTop: 30,
-  },
-  headerBackgroundImage: {
-    paddingBottom: 20,
-    paddingTop: 45,
-  },
-  headerContainer: {},
-  headerColumn: {
-    backgroundColor: 'transparent',
-    ...Platform.select({
-      ios: {
-        alignItems: 'center',
-        elevation: 1,
-        marginTop: -1,
-      },
-      android: {
-        alignItems: 'center',
-      },
-    }),
-  },
-  placeIcon: {
-    color: 'white',
-    fontSize: 26,
-  },
-  scroll: {
-    backgroundColor: '#FFF',
-  },
-  telContainer: {
-    backgroundColor: '#FFF',
-    flex: 1,
-    paddingTop: 30,
-  },
-  userAddressRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  userCityRow: {
-    backgroundColor: 'transparent',
-  },
-  userCityText: {
-    color: '#A5A5A5',
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  userImage: {
-    borderColor: '#FFF',
-    borderRadius: 85,
-    borderWidth: 3,
-    height: 170,
-    marginBottom: 15,
-    width: 170,
-  },
-  userNameText: {
-    color: '#FFF',
-    fontSize: 22,
-    fontWeight: 'bold',
-    paddingBottom: 8,
-    textAlign: 'center',
-  },
-body: {
-    flex: 0,
-    flexGrow: 1,
-    flexDirection: "column",
-    height: '95%',
-    width: '95%',
-    marginTop: -30,
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
-    borderColor: '#000',
-    backgroundColor: colors.background
-},
-bodym: {
-    flex: 0,
-    flexGrow: 1,
-    flexDirection: "column",
-    backgroundColor: colors.background,
-    height: '95%',
-    width: '95%',
-    marginTop: 10,
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
-    borderColor: '#000'
-},
-btnStyle:{
-    backgroundColor: configColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 15,
-    padding: 15,
-    marginLeft: 10,
-    marginRight: 10,
-    borderWidth: 1
-},
-buttonOnBot:{
-    flex: 1,
-    justifyContent: 'flex-end',
-    marginBottom: 25
-},
-container: {
-    flex: 1,
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: {
-        width: 0,
-        height: 1,
-    },
-    backgroundColor: '#1c1c1c',
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-    paddingTop: -20,
-    elevation: 3,
-},
-containerm: {
-    flex: 1,
-    flexGrow: 1,
-    backgroundColor: '#1db954',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: {
-        width: 0,
-        height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
-    elevation: 3,
-    paddingTop: 40,
-    paddingBottom: 0
-},
+  const [optionSelected, setOptionSelected] = React.useState(false);
+  const [selectedOption, setSelectedOption] = React.useState('');
 
-title: {
-    fontSize: 20, 
-    color: configColors.primary, 
-    fontWeight: 'bold'
-},
-econtainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 25,
-  },
-  emailColumn: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 5,
-  },
-  emailIcon: {
-    color: 'gray',
-    fontSize: 30,
-  },
-  emailNameColumn: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  emailNameText: {
-    color: 'gray',
-    fontSize: 14,
-    fontWeight: '200',
-  },
-  emailRow: {
-    flex: 8,
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  emailText: {
-    fontSize: 16,
-  },
-  iconRow: {
-    flex: 2,
-    justifyContent: 'center',
-  },
-  tcontainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 25,
-  },
-  iconRow: {
-    flex: 2,
-    justifyContent: 'center',
-  },
-  smsIcon: {
-    color: 'darkgray',
-    fontSize: 30,
-  },
-  smsRow: {
-    flex: 2,
-    justifyContent: 'flex-start',
-  },
-  telIcon: {
-    color: '#cecece',
-    fontSize: 30,
-  },
-  telNameColumn: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
-  telNameText: {
-    color: 'gray',
-    fontSize: 14,
-    fontWeight: '200',
-  },
-  telNumberColumn: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginBottom: 5,
-  },
-  telNumberText: {
-    fontSize: 16,
-  },
-  telRow: {
-    flex: 6,
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-  scontainer: {
-    flexDirection: 'row',
-  },
-  separatorOffset: {
-    flex: 2,
-    flexDirection: 'row',
-  },
-  separator: {
-    borderColor: '#EDEDED',
-    borderWidth: 0.8,
-    flex: 1000,
-    flexDirection: 'row',
-  },
-})
+  const [data, setData] = React.useState ({
+    password: '',
+    check_textInputChange: false,
+    secureTextEntry: true
+  });
 
-class ProfileScreen extends Component {
-    constructor() {
-        super();
-        this.state = {
-            name: user.username,
-            email: 'Evaldas.Grublys@gmail.com', // TO DO
-            theme: false
-        }
+  const { signIn } = React.useContext(AuthContext);
+
+  const displayConfirm = (command) => {
+    switch(command) {
+      case 'changeAvatar':
+        setSelectedOption(command);
+        setOptionSelected(true);
+        break;
+      case 'changePassword':
+        setSelectedOption(command);
+        setOptionSelected(true);
+        break;
+      case 'deleteAccount':
+        setSelectedOption(command);
+        setOptionSelected(true);
+        break;
+      default:
+        setSelectedOption('');
+        setOptionSelected(false);
+        break;
     }
-/*   static propTypes = {
-    avatar: PropTypes.string.isRequired,
-    avatarBackground: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    address: PropTypes.shape({
-      city: PropTypes.string.isRequired,
-      country: PropTypes.string.isRequired,
-    }).isRequired,
-    emails: PropTypes.arrayOf(
-      PropTypes.shape({
-        email: PropTypes.string.isRequired,
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-      })
-    ).isRequired,
-    tels: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        number: PropTypes.string.isRequired,
-      })
-    ).isRequired,
-  } */
+  }
 
-  renderHeader = () => {
-      <View style={sstyles.headerContainer}>
-        <ImageBackground
-          style={sstyles.headerBackgroundImage}
-          blurRadius={0}
-          source={require('../assets/stadia.png')}
-        >
-          <View style={sstyles.headerColumn}>
-            <Image
-              style={sstyles.userImage}
-              source={require('../assets/stadia.png')}
-            />
-            <Text style={sstyles.userNameText}>{this.state.name}</Text>
-            <View style={sstyles.userAddressRow}>
-              <View>
-                <Image
-                  style={sstyles.placeIcon}
-                  source={require('../assets/stadia.png')}
-                  onPress={() => {}}
-                />
-              </View>
-              <View style={sstyles.userCityRow}>
-                <Text style={sstyles.userCityText}>
-                </Text>
-              </View>
+  const confirmMenu = () => {
+    switch(selectedOption) {
+      case 'changeAvatar':
+      return (
+        <View style={styles.bodyContent}>
+          <Text style={styles.text_footer}>Change Profile Picture</Text>
+            <View style={styles.action}>
+                <Text>Select image from gallery?</Text>
             </View>
+            <TouchableOpacity style={{
+                height: 45,
+                marginHorizontal: 20,
+                marginTop: 20,
+                width: "70%",
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginBottom:5,
+                borderRadius:10,
+                backgroundColor: "#1db954",
+                fontWeight: "bold"
+            }}>
+            <Text style={{color: textColor, flex: 0.55}}>Upload</Text> 
+            </TouchableOpacity>
+            <View style={styles.modalBodyContent}>
+              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('changeProfilePicture')}>
+                <Text style={{color: textColor}}>Confirm</Text> 
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+                <Text style={{color: textColor}}>Cancel</Text> 
+              </TouchableOpacity>
           </View>
-        </ImageBackground>
-      </View>
-  }
-
-  renderUser = () => (
-    <View>
-        <View style={{alignSelf:'center'}}>
-            <Image
-                style={sstyles.userImage}
-                source={require('../assets/favicon.png')}
-                onPress={() => {}}
-            />
         </View>
-        <View style={sstyles.scontainer}>
-                    <View style={sstyles.separatorOffset} />
-                    <View style={sstyles.separator} />
+      );
+      case 'changePassword':
+      return (
+        <View style={styles.bodyContent}>
+          <Text style={styles.text_footer}>Change Password</Text>
+                <View style={styles.action}>
+                    <FontAwesome
+                        name="lock"
+                        colors='#05375a'
+                        size={20}
+                        style={{marginTop: 12}}
+                    />
+                    <TextInput
+                        placeholder="New Password"
+                        style={styles.textInput}
+                        autoCapitalize="none"
+                        onChangeText={()=> {}}
+                    />
+                    {data.check_textInputChange ?
+                    <Animatable.View
+                        animation="bounceIn"
+                    >
+                    <Feather
+                        name="check-circle"
+                        color="green"
+                        size={20}
+                    />
+                    </Animatable.View>
+                    : null }
                 </View>
-        <Text style={{fontSize: 20, color: '#fff'}}>Username: {this.state.name}</Text>
-    </View>
-  )
-
-  renderEmail = () => (
-    <TouchableOpacity onPress={() => {}}>
-        <View style={[sstyles.econtainer]}>
-        <View style={sstyles.iconRow}>
-        <Image
-                  style={sstyles.placeIcon}
-                  source={require('../assets/favicon.png')}
-                  onPress={() => {}}
-                />
+                <View style={styles.action}>
+                    <FontAwesome
+                        name="lock"
+                        colors='#05375a'
+                        size={20}
+                        style={{marginTop: 12}}
+                    />
+                    <TextInput
+                        placeholder="Re-New Password"
+                        style={styles.textInput}
+                        autoCapitalize="none"
+                        onChangeText={()=> {}}
+                    />
+                    {data.check_textInputChange ?
+                    <Animatable.View
+                        animation="bounceIn"
+                    >
+                    <Feather
+                        name="check-circle"
+                        color="green"
+                        size={20}
+                    />
+                    </Animatable.View>
+                    : null }
+                </View>
+          <View style={styles.modalBodyContent}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('change password')}>
+              <Text style={{color: textColor}}>Confirm</Text> 
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+              <Text style={{color: textColor}}>Cancel</Text> 
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={sstyles.emailRow}>
-            <View style={sstyles.emailColumn}>
-            <Text style={sstyles.emailText}>{this.state.name}</Text>
-            </View>
-            <View style={sstyles.emailNameColumn}>
-            {this.state.email.length !== 0 && (
-                <Text style={sstyles.emailNameText}>{this.state.email}</Text>
-            )}
-            </View>
+      );
+      case 'deleteAccount':
+      return (
+        <View style={styles.bodyContent}>
+          <Text style={styles.text_footer}>Deactivate Account</Text>
+          <View>
+                <View style={{alignItems: 'center', justifyContent: 'center'}}>
+                  <Text style={{color: textColor, fontSize:14, fontWeight:'400', textDecorationLine: 'underline'}}>{user.username}</Text>
+                </View>
+              </View>
+                <View style={styles.action}>
+                    <FontAwesome
+                        name="lock"
+                        colors='#05375a'
+                        size={20}
+                        style={{marginTop: 12}}
+                    />
+                    <TextInput
+                        placeholder="Current Password"
+                        style={styles.textInput}
+                        autoCapitalize="none"
+                        onChangeText={()=> {}}
+                    />
+                    {data.check_textInputChange ?
+                    <Animatable.View
+                        animation="bounceIn"
+                    >
+                    <Feather
+                        name="check-circle"
+                        color="green"
+                        size={20}
+                    />
+                    </Animatable.View>
+                    : null }
+                </View>
+            <View style={styles.modalBodyContent}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('delete')}>
+              <Text style={{color: textColor}}>Confirm</Text> 
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+              <Text style={{color: textColor}}>Cancel</Text> 
+            </TouchableOpacity>
+          </View>
         </View>
-        </View>
-    </TouchableOpacity>
-  )
-
-  render() {
-    return (
-        <View style={sstyles.containerm}>
-            <View style={sstyles.bodym}>
-                
-                {this.renderUser()}
-                {this.renderEmail()}
-                <Button title="Change password" color="#000"/>
-            </View>
-        </View>
-    )
+      );
+    }
   }
+  
+  return (
+    <View>
+        <View style={styles.header} />
+        <Image style={styles.avatar} source={require('../assets/user_icon.png')}/>
+        <View style={styles.body}>
+          <View style={styles.bodyContent}>
+            <Text style={{color: textColor, fontSize:28, fontWeight:'600', textDecorationLine: 'underline'}}>{user.username}</Text>
+            <Text style={styles.info, {color: textColor}}>User</Text>
+            <Text style={styles.description}>Joined: 2020/12/17</Text>
+            
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => displayConfirm('changePassword')}>
+              <Text style={{color: textColor}}>Change Password</Text>  
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => displayConfirm('changeAvatar')}>
+              <Text style={{color: textColor}}>Change Profile Picture</Text> 
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => displayConfirm('deleteAccount')}>
+              <Text style={{color: textColor}}>Deactivate Account</Text> 
+            </TouchableOpacity>
+          </View>
+      </View>
+      <Modal isVisible={optionSelected} style={styles.modalView}>
+        { confirmMenu() }
+      </Modal>
+    </View>
+  );
 }
 
-export default ProfileScreen
+export default ProfileScreen;
+
+const styles = StyleSheet.create({
+  header:{
+    backgroundColor: "#1db954",
+    height:200,
+  },
+  avatar: {
+    width: 130,
+    height: 130,
+    borderRadius: 63,
+    borderWidth: 4,
+    borderColor: "white",
+    marginBottom:10,
+    alignSelf:'center',
+    position: 'absolute',
+    marginTop: 130
+  },
+  name:{
+    fontSize:28,
+    color:'#fff',
+    fontWeight:'600'
+  },
+  body:{
+    marginTop:40,
+    flex: 0.2
+  },
+  bodyContent: {
+    flex: 1,
+    alignItems: 'center',
+    padding:30,
+  },
+  info:{
+    fontSize:16,
+    color: "#00BFFF",
+    marginTop:10
+  },
+  description:{
+    fontSize:16,
+    color: "#696969",
+    marginTop:10,
+    textAlign: 'center'
+  },
+  buttonContainer: {
+    marginTop:15,
+    height:45,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom:20,
+    width:'75%',
+    borderRadius:30,
+    backgroundColor: "#1db954",
+    fontWeight: "bold"
+  },
+  modalView: {
+    flex: 1,
+    height: "35%",
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 0,
+    alignItems: "center",
+    alignSelf: 'center',
+    position: 'absolute'
+  },
+  modalButtonContainer: {
+    height: 45,
+    marginHorizontal: 20,
+    marginTop: 50,
+    width: "80%",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom:20,
+    borderRadius:10,
+    backgroundColor: "#1db954",
+    fontWeight: "bold"
+  },
+  modalBodyContent: {
+    height:45,
+    width:100,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 20,
+  },
+  textInput: {
+    flex: 1,
+    marginTop: Platform.OS === 'ios' ? 0 : -12,
+    marginTop: 10,
+    paddingLeft: 10,
+    color: '#05375a'
+  },
+  text_footer: {
+    color: '#05375a',
+    fontSize: 18
+  },
+  action: {
+    flexDirection: 'row',
+    marginTop: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f2f2f2',
+    paddingBottom: 5
+  },
+});
