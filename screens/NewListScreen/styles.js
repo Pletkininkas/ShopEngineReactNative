@@ -11,7 +11,7 @@ export default StyleSheet.create({
     },
     highlightedItem:{
       elevation: 10,
-      backgroundColor: "#9bf2bd",
+      backgroundColor: "#1db954",
       borderRadius: 10,
       paddingVertical: 10,
       paddingHorizontal: 12,
@@ -26,6 +26,20 @@ export default StyleSheet.create({
       marginBottom: 20,
       backgroundColor: "#1db954",
       borderRadius: 10,
+    },
+    disabledButton:{
+      width: "40%",
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 20,
+      marginBottom: 20,
+      backgroundColor: "#667069",
+      borderRadius: 10,
+    },
+    disabledText:{
+      alignSelf: 'center',
+      color: 'rgba(0.5,0.5,0.5,0.5)'
     },
     leftText: {
       alignSelf: 'center'
