@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Button, View, Text, StyleSheet, Dimensions } from 'react-native';
-import { color } from 'react-native-reanimated';
-import { Header } from 'react-navigation';
 import { useTheme } from '@react-navigation/native';
-import * as scale from 'd3-scale'
 import {
     LineChart,
     BarChart
@@ -11,27 +8,32 @@ import {
 import moment from 'moment';
 import styles from '../config/styles';
 import configColors from '../config/colors';
-import { render } from 'react-dom';
-import config, { user } from '../config';
 
-const StatisticsScreen = () => {
+const StatisticsScreen = ({navigation}) => {
 
     const {colors} = useTheme();
-
+    const [months, setMonths] = useState(['']);
+    
     function getListOfAllMonths() {
         var currentDate = moment();
         var startDate = moment().subtract(11, 'months');
-        var months = [];
+        var list = [];
 
-        while (startDate <= currentDate) {
-            months.push(startDate.format("MMM"));
-            startDate.add(1, 'months');
+        while (startDate < currentDate) {
+          list.push(startDate.format("MMM"));
+          startDate.add(1, 'months');
         }
-        return months;
+        list.push(currentDate.format("MMM"));
+        return list;
     }
-
-
-    var months = getListOfAllMonths();
+  
+    React.useEffect(() => {
+      // Subscribe for the focus Listener
+      const unsubscribe = navigation.addListener('focus', () => {
+        setMonths(getListOfAllMonths());
+      });
+      return unsubscribe;
+    }, [navigation]);
 
     const barData = {
         labels: [months[10], months[11]],
@@ -41,25 +43,21 @@ const StatisticsScreen = () => {
           }
         ]
       };
-      const chartConfig = {
+
+    const chartConfig = {
         backgroundGradientFrom: configColors.green,
-        //backgroundGradientFromOpacity: 0,
         backgroundGradientTo: colors.background,
-        //backgroundGradientToOpacity: 0.5,
         color: (opacity = 1) => colors.text,
-        //strokeWidth: 10, // optional, default 3
         barPercentage: 2,
-        useShadowColorFromDataset: false, // optional
+        useShadowColorFromDataset: false, 
         data: barData.datasets,
-        decimalPlaces: 2, // optional, defaults to 2dp
+        decimalPlaces: 2, 
         labelColor: (opacity = 1) => colors.text,
         fillShadowGradient:'skyblue',
         fillShadowGradientOpacity:1,
         style: {
             borderRadius: 16
-        }
-        
-        
+        }        
       };
 
     return (
@@ -78,18 +76,13 @@ const StatisticsScreen = () => {
                     }
                 ]
                 }}
-                width={Dimensions.get("window").width - 20} // from react-native
+                width={Dimensions.get("window").width - 20}
                 height={220}
                 yAxisSuffix="€"
-                yAxisInterval={1} // optional, defaults to 1
+                yAxisInterval={1}
                 fromZero = "true"
                 verticalLabelRotation={30}
                 chartConfig={chartConfig}
-                // bezier
-                // style={{
-                //     marginVertical: 8,
-                //     borderRadius: 16
-                // }}
                 />
 
                 <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
@@ -103,8 +96,6 @@ const StatisticsScreen = () => {
                     fromZero = "true"
                     chartConfig={chartConfig}
                     showValuesOnTopOfBars="true"
-
-                    //verticalLabelRotation={30}
                 />
             </View>             
             
