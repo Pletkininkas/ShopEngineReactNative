@@ -94,8 +94,8 @@ const StatisticsScreen = ({navigation}) => {
         labels: [months[10], months[11]],
         datasets: [
           {
-            //data: [20, 45]
-            data: [graphData[10], graphData[11]] 
+            data: [20, 45]
+            //data: [graphData[10], graphData[11]] 
           }
         ]
       };
@@ -129,8 +129,8 @@ const StatisticsScreen = ({navigation}) => {
                 labels: months,
                 datasets: [
                     {
-                        //data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
-                        data: graphData 
+                        data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
+                        //data: graphData 
                     }
                 ]
                 }}
