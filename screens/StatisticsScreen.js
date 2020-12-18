@@ -6,61 +6,67 @@ import {
     BarChart
   } from "react-native-chart-kit";
 import moment from 'moment';
-import configStyles from '../config/styles';
+import styles from '../config/styles';
 import configColors from '../config/colors';
 import config, { user } from '../config';
-import { color } from 'react-native-reanimated';
 
 const StatisticsScreen = ({navigation}) => {
 
     const {colors} = useTheme();
-    const [months, setMonths] = useState(['']);
-    //const[graphData, setGraphData] = useState([0]);
-    //const [receipts, setReceipts] = useState([]);
+    const [months, setMonths] = React.useState(['']);
+    const[graphData, setGraphData] = React.useState([0]);
+    const [receipts, setReceipts] = React.useState([]);
+
+    React.useState(() => {
+      let token = user.token;
+      fetch(config.API_URL+'receipt', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      }).then(data => {
+          return data.json();
+        })
+        .then(data => {
+          setReceipts(data.data);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+    }, []);
+
     
-      // useState(() => {
-      //   let token = user.token;
-      //   fetch(config.API_URL+'receipt', {
-      //     method: 'GET',
-      //     headers: {
-      //       Accept: 'application/json',
-      //       'Content-Type': 'application/json',
-      //       'Authorization': 'Bearer ' + token
-      //     }
-      //   }).then(data => {
-      //       return data.json();
-      //     })
-      //     .then(data => {
-      //       setReceipts(data.data);
-      //     })
-      //     .catch(err => {
-      //       console.log(err);
-      //     });
-  
-      // }, []);
+    function getGraphData() {
+      var data = [];
+      data.length = 12; 
+      data.fill(0);
+      var numOfShoppings = [0, 0];
+      receipts.forEach(element => {
+      var date = new Date(element.date);
+      var year = date.getFullYear();
+      var month = date.getMonth();
 
-    //   function getGraphData() {
-    //     var data = [];
-    //     data.length = 12; 
-    //     data .fill(0);
-    //     receipts.forEach(element => {
-    //     var date = new Date(element.date);
-    //     var year = date.getFullYear();
-    //     var month = date.getMonth();
+      var currentDate = moment().add(1, 'days');
+      var startDate = moment().subtract(11, 'months');
+      var i;
+      for (i = 0; startDate < currentDate; i++, startDate.add(1, 'months')) {
+        if (year === startDate.year() && month === startDate.month())
+        {
+          data[i] +=  element.total;
+          if(i==10||i==11){
+            numOfShoppings[i-10]++;
+          }
+          break;
+        }
+      }
+    })
+    //console.log(numOfShoppings[1]);
 
-    //     var currentDate = moment().add(1, 'days');
-    //     var startDate = moment().subtract(11, 'months');
-    //     var i;
-    //     for (i = 0; startDate < currentDate; i++, startDate.add(1, 'months')) {
-    //       if (year === startDate.year() && month === (startDate.month()+1))
-    //       {
-    //         data[i] +=  element.total;
-    //         break;
-    //       }
-    //     }
-    //   })
-    //  return data;
-    // }
+   return data;
+  }
     
     function getListOfAllMonths() {
         var currentDate = moment();
@@ -79,7 +85,7 @@ const StatisticsScreen = ({navigation}) => {
       // Subscribe for the focus Listener
       const unsubscribe = navigation.addListener('focus', () => {
         setMonths(getListOfAllMonths());
-        //setGraphData(getGraphData());
+        setGraphData(getGraphData());
       });
       return unsubscribe;
     }, [navigation]);
@@ -88,8 +94,8 @@ const StatisticsScreen = ({navigation}) => {
         labels: [months[10], months[11]],
         datasets: [
           {
-            data: [20, 45]
-            //data: graphData 
+            //data: [20, 45]
+            data: [graphData[10], graphData[11]] 
           }
         ]
       };
@@ -115,16 +121,16 @@ const StatisticsScreen = ({navigation}) => {
       };
 
     return (
-      <View style={configStyles().container} backgroundColor={colors.background}>
-          <View style={configStyles().bodym} justifyContent={'space-evenly'}>
+      <View style={styles().container} backgroundColor={colors.background}>
+          <View style={styles().bodym} justifyContent={'space-evenly'}>
           <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
           <LineChart
             data={{
                 labels: months,
                 datasets: [
                     {
-                        data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
-                        //data: graphData 
+                        //data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
+                        data: graphData 
                     }
                 ]
                 }}
@@ -140,7 +146,6 @@ const StatisticsScreen = ({navigation}) => {
                 <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
 
                 <BarChart
-                    //style={graphStyle}
                     data={barData}
                     width={Dimensions.get("window").width - 20}
                     height={220}
