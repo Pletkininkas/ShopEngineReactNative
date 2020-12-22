@@ -7,8 +7,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  TextInput
+  TextInput,
+  Keyboard
 } from 'react-native'
+import * as Animatable from 'react-native-animatable';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@react-navigation/native';
@@ -81,7 +83,7 @@ const ProfileScreen = () =>  {
               <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('changeProfilePicture')}>
                 <Text style={{color: textColor}}>Confirm</Text> 
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false),Keyboard.dismiss()}}>
                 <Text style={{color: textColor}}>Cancel</Text> 
               </TouchableOpacity>
           </View>
@@ -142,10 +144,10 @@ const ProfileScreen = () =>  {
                     : null }
                 </View>
           <View style={styles.modalBodyContent}>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('change password')}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => Keyboard.dismiss()}>
               <Text style={{color: textColor}}>Confirm</Text> 
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss()}}>
               <Text style={{color: textColor}}>Cancel</Text> 
             </TouchableOpacity>
           </View>
@@ -186,10 +188,10 @@ const ProfileScreen = () =>  {
                     : null }
                 </View>
             <View style={styles.modalBodyContent}>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('delete')}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => Keyboard.dismiss()}>
               <Text style={{color: textColor}}>Confirm</Text> 
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => setOptionSelected(false)}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss()}}>
               <Text style={{color: textColor}}>Cancel</Text> 
             </TouchableOpacity>
           </View>
