@@ -3,13 +3,14 @@ import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text,
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
-import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
+//import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
 import config from '../../config'
 import styles from './styles.js'
 import State from './state.js'
+import { ImageManipulator } from 'expo-image-crop'
 
 
 
@@ -115,12 +116,12 @@ const ScanScreen = ({ navigation }) => {
         }
     }
 
-    const _readImage = async (par) =>{
-        setUri(par.uri)
+    const _readImage = async (pUri) =>{
+        setUri(pUri)
         setLoadingMsg('Reading image...')
         setScreenState(State.ScreenState.showLoading)
 
-        let datajson = await _getScannedListAsync(par.uri);
+        let datajson = await _getScannedListAsync(pUri);
         var data = []
         for(var i in datajson){
             data.push(datajson[i])
@@ -286,24 +287,15 @@ const ScanScreen = ({ navigation }) => {
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                         <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
                         <Text style={{color:'green'}}> {loadingMsg} </Text>
-                    </View>           
-                    {
-                        uri
-                    && (
-                        <ExpoImageManipulator
-                            photo={{ uri }}
-                            isVisible={true}
-                            onPictureChoosed={(data) => _readImage(data)}
-                            onToggleModal={() => {}}
-                            saveOptions={{
-                                compress: 1,
-                                format: 'jpeg',
-                                base64: true,
-                            }}
-                            
-                        />
-                    )
-                    }
+                    </View>    
+                    <ImageManipulator
+                        photo={{ uri }}
+                        isVisible={true}
+                        onPictureChoosed={({ uri: uriM }) => _readImage(uriM)}
+                        onToggleModal={() => {}}
+                    />       
+                    
+                    
                 </View>
             )
                 

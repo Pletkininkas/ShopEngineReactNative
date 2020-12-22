@@ -17,6 +17,7 @@
     "@react-navigation/stack": "^5.12.6",
     "d3-scale": "^3.2.3",
     "expo": "~39.0.2",
+    "expo-image-crop": "^1.0.4",
     "expo-image-picker": "~9.1.1",
     "expo-linear-gradient": "~8.3.0",
     "expo-status-bar": "~1.0.2",
