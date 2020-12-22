@@ -240,7 +240,7 @@ export default ShoppingHistoryScreen;
 
 const contentStyles = StyleSheet.create({
   item: {
-    elevation: 10,
+    elevation: 5,
     backgroundColor: "#f2fcf6",
     borderRadius: 10,
     paddingVertical: 10,
