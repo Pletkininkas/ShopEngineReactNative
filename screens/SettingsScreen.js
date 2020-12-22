@@ -37,7 +37,6 @@ const SettingsScreen = ({ navigation }) => {
   const [automaticallySaveReceipts, setAutomaticallySaveReceipts] = useState(
     false
   );
-  const [gender, setGender] = useState("Male");
   const [language, setLanguage] = useState("English");
   const [renderAbout, setRenderAbout] = useState(false);
   const [renderReport, setRenderReport] = useState(false);
@@ -200,43 +199,6 @@ const SettingsScreen = ({ navigation }) => {
             />
             <SettingsDividerLong dividerStyle={{height:10}} />
 
-
-            <View View style={{ flexDirection: "row" }}>
-              <View style={lstyles.iconView}>
-                <FontAwesome
-                  name="genderless"
-                  size={30}
-                  color={theme.dark ? colors.white : colors.dark}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <SettingsPicker
-                  title="Gender"
-                  titleStyle={{
-                    color: theme.dark ? colors.white : colors.dark,
-                  }}
-                  dialogDescription={"Choose your gender."}
-                  options={[
-                    { label: "Prefer not to say", value: "" },
-                    { label: "Male", value: "Male" },
-                    { label: "Female", value: "Female" },
-                  ]}
-                  onValueChange={(value) => {
-                    setGender(value);
-                    setUserPrefs(value, language, allowPushNotifications, automaticallySaveReceipts);
-                  }}
-                  value={gender}
-                  containerStyle={{
-                    backgroundColor: theme.dark
-                      ? theme.colors.background
-                      : colors.white,
-                  }}
-                />
-              </View>
-            </View>
-
-            <SettingsDividerLong />
-
             <View View style={{ flexDirection: "row" }}>
               <View style={lstyles.iconView}>
                 <FontAwesome
@@ -258,7 +220,7 @@ const SettingsScreen = ({ navigation }) => {
                   ]}
                   onValueChange={(value) => {
                     setLanguage(value);
-                    setUserPrefs(gender, value, allowPushNotifications, automaticallySaveReceipts);
+                    setUserPrefs(value, allowPushNotifications, automaticallySaveReceipts);
                   }}
                   value={language}
                   containerStyle={{
@@ -288,7 +250,7 @@ const SettingsScreen = ({ navigation }) => {
                   }}
                   onValueChange={(value) => {
                     setAllowPushNotifications(value);
-                    setUserPrefs(gender, language, value, automaticallySaveReceipts);
+                    setUserPrefs(language, value, automaticallySaveReceipts);
                   }}
                   value={allowPushNotifications}
                   trackColor={{
@@ -322,7 +284,7 @@ const SettingsScreen = ({ navigation }) => {
                   }}
                   onValueChange={(value) => {
                     setAutomaticallySaveReceipts(value);
-                    setUserPrefs(gender, language, allowPushNotifications, value);
+                    setUserPrefs(language, allowPushNotifications, value);
                   }}
                   value={automaticallySaveReceipts}
                   trackColor={{
