@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, View, Text, StyleSheet, Dimensions } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import {
@@ -14,61 +14,71 @@ const StatisticsScreen = ({navigation}) => {
 
     const {colors} = useTheme();
     const [months, setMonths] = React.useState(['']);
-    const[graphData, setGraphData] = React.useState([0]);
     const [receipts, setReceipts] = React.useState([]);
+    var numOfShoppings = [0, 0];
 
-    React.useState(() => {
-      let token = user.token;
-      fetch(config.API_URL+'receipt', {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      }).then(data => {
-          return data.json();
-        })
-        .then(data => {
-          setReceipts(data.data);
-        })
-        .catch(err => {
-          console.log(err);
+    useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+        setMonths(getListOfAllMonths());
+        let token = user.token;
+        fetch(config.API_URL+'receipt', {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            }
+          }).then(data => {
+              return data.json();
+            })
+            .then(data => {
+              setReceipts(data.data);
+            })
+            .catch(err => {
+              console.log(err);
+            });    
         });
+        return unsubscribe;
+    }, [navigation]);
 
-    }, []);
+  function calculateAverage(numerator, denominator) {
+    if (denominator === 0 || isNaN(denominator)) {
+          return 0;
+    }
+    else {
+          return Math.round((numerator / denominator)*100)/100;
+    }
+  }
 
-    
-    function getGraphData() {
-      var data = [];
-      data.length = 12; 
-      data.fill(0);
-      var numOfShoppings = [0, 0];
-      receipts.forEach(element => {
+  function getGraphData() {
+    var list = [];
+    list.length = 12; 
+    list.fill(0);
+    receipts.forEach(element => {
+
       var date = new Date(element.date);
       var year = date.getFullYear();
       var month = date.getMonth();
 
       var currentDate = moment().add(1, 'days');
       var startDate = moment().subtract(11, 'months');
+      
       var i;
       for (i = 0; startDate < currentDate; i++, startDate.add(1, 'months')) {
         if (year === startDate.year() && month === startDate.month())
         {
-          data[i] +=  element.total;
+          list[i] +=  element.total;
           if(i==10||i==11){
             numOfShoppings[i-10]++;
           }
           break;
         }
       }
-    })
-    //console.log(numOfShoppings[1]);
-
-   return data;
-  }
+    });
+  return list;
+}
     
-    function getListOfAllMonths() {
+  function getListOfAllMonths() {
         var currentDate = moment();
         var startDate = moment().subtract(11, 'months');
         var list = [];
@@ -80,45 +90,35 @@ const StatisticsScreen = ({navigation}) => {
         list.push(currentDate.format("MMM"));
         return list;
     }
-  
-    React.useEffect(() => {
-      // Subscribe for the focus Listener
-      const unsubscribe = navigation.addListener('focus', () => {
-        setMonths(getListOfAllMonths());
-        setGraphData(getGraphData());
-      });
-      return unsubscribe;
-    }, [navigation]);
+
+    var graphData = getGraphData();
 
     const barData = {
         labels: [months[10], months[11]],
         datasets: [
           {
-            data: [20, 45]
-            //data: [graphData[10], graphData[11]] 
+            data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])]
           }
         ]
       };
 
     const chartConfig = {
-      backgroundGradientFrom: "#1E2923",
+      backgroundGradientFrom: configColors.green,
       backgroundGradientFromOpacity: 0,
-      //backgroundGradientTo: "#08130D",
       backgroundGradientToOpacity: 0.5,
-        // backgroundGradientFrom: colors.background,
       backgroundGradientTo: configColors.green,
-        color: (opacity = 1) => colors.text,
-        barPercentage: 2,
-        useShadowColorFromDataset: false, 
-        data: barData.datasets,
-        decimalPlaces: 2, 
-        labelColor: (opacity = 1) => colors.text,
-        fillShadowGradient:configColors.green,
-        fillShadowGradientOpacity:1,
-        style: {
-            borderRadius: 16
-        }        
-      };
+      color: (opacity = 1) => colors.text,
+      barPercentage: 2,
+      useShadowColorFromDataset: false, 
+      data: barData.datasets,
+      decimalPlaces: 2, 
+      labelColor: (opacity = 1) => colors.text,
+      fillShadowGradient:configColors.green,
+      fillShadowGradientOpacity:1,
+      style: {
+          borderRadius: 16
+      }        
+    };
 
     return (
       <View style={styles().container} backgroundColor={colors.background}>
@@ -129,8 +129,7 @@ const StatisticsScreen = ({navigation}) => {
                 labels: months,
                 datasets: [
                     {
-                        data: [20, 45, 28, 80, 99, 43, 20, 45, 28, 80, 99, 43]
-                        //data: graphData 
+                        data: graphData 
                     }
                 ]
                 }}
