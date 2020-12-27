@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, Image, ImageBackground } from 'react-native';
 import {
     useTheme,
     Title,
@@ -19,69 +19,124 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import config, { user } from '../config';
-// import { Colors } from 'react-native/Libraries/NewAppScreen';
-// import { color } from 'react-native-reanimated';
+import config, { user, setReceiptsHistory, drawer, defaultImages, setProfileImage } from '../config';
 
 import configColors from '../config/colors';
 import { useEffect } from 'react/cjs/react.development';
 
 export function DrawerContent(props) {
-
     const paperTheme = useTheme();
-
     const { signOut, toggleTheme } = React.useContext(AuthContext);
+    const updateDrawer = React.useState(drawer.update);
+    const [encodedBase64, setEncodedBase64] = React.useState(defaultImages.profile);
 
-    const name = user.username;
-
-    const [receiptCount, setReceiptCount] = useState(0)
-
-    useEffect(() => {
+    const fetchUserData = () => {
         fetch(config.API_URL+'receipt', {
-          method: 'GET',
-          headers: {
+            method: 'GET',
+            headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + user.token
-          }
+            }
         }).then(data => {
             return data.json();
-          })
-          .then(data => {
-            setReceiptCount(Object(data.data).length);
-            user.receipt = data.data;
-          })
-          .catch(err => {
+            })
+            .then(data => {
+            setReceiptsHistory(null, Object(data.data).length, data.data);
+            })
+            .catch(err => {
             console.log(err);
-          });
-      }, []);
+            });
+    }
+
+    useEffect(() => {
+        fetchUserData();
+        fetchUserProfileImage();
+
+        const interval=setInterval(()=>{
+            fetchUserData()
+            },10000)
+                
+                
+        return()=>clearInterval(interval)
+    }, []);
+
+    const fetchUserProfileImage = () => {
+        fetch(config.API_URL+'user', {
+            method: 'GET',
+            headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + user.token
+            }
+        }).then(data => {
+            return data.json();
+            })
+            .then(data => {
+                if (data.data != null) {
+                    setEncodedBase64(data.data.imageData);
+                    setProfileImage(data.data.imageData);
+                } else {
+                    setProfileImage(defaultImages.profile);
+                }
+            })
+            .catch(err => {
+            console.log(err);
+            });
+    }
+
+    const returnUpdatedDrawer = () => {
+        return(
+            <ImageBackground style={styles.userInfoSection} source={require('../assets/profile_bg.jpg')}>
+                <View style={{flexDirection: 'row', marginTop: 15}}>
+                    <Image style={{width: 75, height: 75, borderRadius: 63}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
+                    <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
+                        <Title style={styles.title}>{user.username}</Title>
+                        <Caption style={styles.caption}>User</Caption>
+                    </View>
+                </View>
+                <View style={styles.column, {marginTop: 10}}>
+                    <View style={styles.section}>
+                        <Paragraph style={styles.paragraph, styles.caption}>{user.receiptTotalSaved.toFixed(2)} €</Paragraph>
+                        <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
+                    </View>
+                    <View style={styles.section}>
+                        <Paragraph style={styles.paragraph, styles.caption}>{user.receiptCount}</Paragraph>
+                        <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
+                    </View>
+                </View>
+            </ImageBackground>
+        );
+    }
     
     return (
         <View style={{flex:1}}>
             <DrawerContentScrollView { ... props}>
                 <View style={styles.drawerContent}>
-                    <View style={styles.userInfoSection}>
-                        <View style={{flexDirection: 'row', marginTop: 15}}>
-                            <Icon
-                            name="ios-person"
-                            size={75}                            
-                            color={configColors.primary}/>
-                            <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
-                                <Title style={styles.title}>{name}</Title>
-                                <Caption style={styles.caption}>User</Caption>
+                    { updateDrawer ? returnUpdatedDrawer() :
+                        <View style={styles.userInfoSection}>
+                            <View style={{flexDirection: 'row', marginTop: 15}}>
+                                <Icon
+                                name="ios-person"
+                                size={75}                            
+                                color={configColors.primary}/>
+                                <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
+                                    <Title style={styles.title}>{user.username}</Title>
+                                    <Caption style={styles.caption}>User</Caption>
+                                </View>
+                            </View>
+                            <View style={styles.column, {marginTop: 10}}>
+                                <View style={styles.section}>
+                                    <Paragraph style={styles.paragraph, styles.caption}>{user.receiptTotalSaved.toFixed(2)} €</Paragraph>
+                                    <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
+                                </View>
+                                <View style={styles.section}>
+                                    <Paragraph style={styles.paragraph, styles.caption}>{user.receiptCount}</Paragraph>
+                                    <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
+                                </View>
                             </View>
                         </View>
-                        <View style={styles.column, {marginTop: 10}}>
-                            <View style={styles.section}>
-                                <Paragraph style={styles.paragraph, styles.caption}>36.19€</Paragraph>
-                                <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
-                            </View>
-                            <View style={styles.section}>
-                                <Paragraph style={styles.paragraph, styles.caption}>{receiptCount}</Paragraph>
-                                <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
-                            </View>
-                        </View>
-                    </View>
+                    }
 
                     <Drawer.Section style={styles.drawerSection}>
                         <DrawerItem

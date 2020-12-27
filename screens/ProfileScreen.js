@@ -8,23 +8,30 @@ import {
   View,
   TouchableOpacity,
   TextInput,
-  Keyboard
+  Keyboard,
+  Alert,
+  ImageBackground
 } from 'react-native'
 import * as Animatable from 'react-native-animatable';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 import { AuthContext } from '../components/context';
 
-import { user } from '../config'
+import config, { defaultImages, user } from '../config';
+import colors from '../config/colors';
 
 const ProfileScreen = () =>  {
-  const getTheme = useTheme();
-  const textColor = getTheme.dark ? '#fff' : '#000';
+  const theme = useTheme();
+  const textColor = theme.dark ? '#fff' : '#000';
 
   const [optionSelected, setOptionSelected] = React.useState(false);
   const [selectedOption, setSelectedOption] = React.useState('');
+  const [uploadImageUri, setUploadImageUri] = React.useState('');
+  const [notSelected, setNotSelected] = React.useState(false);
+  const [notSelectedInformationText, setNotSelectedInformationText] = React.useState('Please select image.');
 
   const [data, setData] = React.useState ({
     password: '',
@@ -32,7 +39,7 @@ const ProfileScreen = () =>  {
     secureTextEntry: true
   });
 
-  const { signIn } = React.useContext(AuthContext);
+  const { signOut } = React.useContext(AuthContext);
 
   const displayConfirm = (command) => {
     switch(command) {
@@ -55,14 +62,57 @@ const ProfileScreen = () =>  {
     }
   }
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      base64: true,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+    if (!result.cancelled) {
+      setUploadImageUri(result.base64);
+      setNotSelected(false);
+    }
+  };
+
+  const uploadProfileImage = async () => {
+    if (uploadImageUri != '') {
+      let token = user.token;
+      try {
+        let response = await fetch(
+            config.API_URL + 'user', {
+          method: 'POST',
+          headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+          },
+          body: '{\"Image\":\"'+uploadImageUri+'\",\"ImageType\":\"Profile\",\"UserUpdateType\":\"Image\"}'
+          }
+        );
+        let json = await response.json();
+        setNotSelectedInformationText(json.message);
+        setNotSelected(true);
+        setUploadImageUri('');
+      } catch (error) {
+        console.error('ERROR:' + error);
+        setNotSelectedInformationText('Unexpected error! Try again later.');
+      }
+    } else {
+      setNotSelectedInformationText('Please select image.');
+      setNotSelected(true);
+    }
+  };
+
   const confirmMenu = () => {
     switch(selectedOption) {
       case 'changeAvatar':
       return (
         <View style={styles.bodyContent}>
-          <Text style={styles.text_footer}>Change Profile Picture</Text>
+          <Text style={[styles.text_footer, {color: theme.dark ? themeColors.white : themeColors.dark}]}>Change Profile Picture</Text>
             <View style={styles.action}>
-                <Text>Select image from gallery?</Text>
+                <Text style={{color: theme.dark ? themeColors.white : themeColors.dark}}>Select image from gallery</Text>
             </View>
             <TouchableOpacity style={{
                 height: 45,
@@ -76,14 +126,15 @@ const ProfileScreen = () =>  {
                 borderRadius:10,
                 backgroundColor: "#1db954",
                 fontWeight: "bold"
-            }}>
+            }} onPress={() => {pickImage()}}>
             <Text style={{color: textColor, flex: 0.55}}>Upload</Text> 
             </TouchableOpacity>
+            { notSelected ? <Text style={[{fontSize: 10}, {color: theme.dark ? themeColors.white : themeColors.dark}]}>{notSelectedInformationText}</Text> : <></>}
             <View style={styles.modalBodyContent}>
-              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => console.log('changeProfilePicture')}>
+              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {uploadProfileImage()}}>
                 <Text style={{color: textColor}}>Confirm</Text> 
               </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false),Keyboard.dismiss()}}>
+              <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss(), setUploadImageUri(''), setNotSelected(false)}}>
                 <Text style={{color: textColor}}>Cancel</Text> 
               </TouchableOpacity>
           </View>
@@ -92,7 +143,7 @@ const ProfileScreen = () =>  {
       case 'changePassword':
       return (
         <View style={styles.bodyContent}>
-          <Text style={styles.text_footer}>Change Password</Text>
+          <Text style={[styles.text_footer, {color: theme.dark ? themeColors.white : themeColors.dark}]}>Change Password</Text>
                 <View style={styles.action}>
                     <FontAwesome
                         name="lock"
@@ -102,9 +153,10 @@ const ProfileScreen = () =>  {
                     />
                     <TextInput
                         placeholder="New Password"
-                        style={styles.textInput}
+                        placeholderTextColor= '#C7C7CD'
+                        style={[styles.textInput, {color: theme.dark ? themeColors.white : themeColors.dark}]}
                         autoCapitalize="none"
-                        onChangeText={()=> {}}
+                        onChangeText={(props)=> {setData({password: props}), console.log('naujas: '+props)}}
                     />
                     {data.check_textInputChange ?
                     <Animatable.View
@@ -127,7 +179,8 @@ const ProfileScreen = () =>  {
                     />
                     <TextInput
                         placeholder="Re-New Password"
-                        style={styles.textInput}
+                        placeholderTextColor= '#C7C7CD'
+                        style={[styles.textInput, {color: theme.dark ? themeColors.white : themeColors.dark}]}
                         autoCapitalize="none"
                         onChangeText={()=> {}}
                     />
@@ -144,8 +197,8 @@ const ProfileScreen = () =>  {
                     : null }
                 </View>
           <View style={styles.modalBodyContent}>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => Keyboard.dismiss()}>
-              <Text style={{color: textColor}}>Confirm</Text> 
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {ChangePassword(), Keyboard.dismiss(), setOptionSelected(false)}}>
+              <Text style={{color: textColor}}>Confirm</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss()}}>
               <Text style={{color: textColor}}>Cancel</Text> 
@@ -156,7 +209,7 @@ const ProfileScreen = () =>  {
       case 'deleteAccount':
       return (
         <View style={styles.bodyContent}>
-          <Text style={styles.text_footer}>Deactivate Account</Text>
+          <Text style={[styles.text_footer, {color: theme.dark ? themeColors.white : themeColors.dark}]}>Deactivate Account</Text>
           <View>
                 <View style={{alignItems: 'center', justifyContent: 'center'}}>
                   <Text style={{color: textColor, fontSize:14, fontWeight:'400', textDecorationLine: 'underline'}}>{user.username}</Text>
@@ -165,30 +218,13 @@ const ProfileScreen = () =>  {
                 <View style={styles.action}>
                     <FontAwesome
                         name="lock"
-                        colors='#05375a'
+                        colors="#fff"
                         size={20}
                         style={{marginTop: 12}}
                     />
-                    <TextInput
-                        placeholder="Current Password"
-                        style={styles.textInput}
-                        autoCapitalize="none"
-                        onChangeText={()=> {}}
-                    />
-                    {data.check_textInputChange ?
-                    <Animatable.View
-                        animation="bounceIn"
-                    >
-                    <Feather
-                        name="check-circle"
-                        color="green"
-                        size={20}
-                    />
-                    </Animatable.View>
-                    : null }
                 </View>
             <View style={styles.modalBodyContent}>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => Keyboard.dismiss()}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), DeleteUser(), Keyboard.dismiss()}}>
               <Text style={{color: textColor}}>Confirm</Text> 
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss()}}>
@@ -199,11 +235,93 @@ const ProfileScreen = () =>  {
       );
     }
   }
+
+  const DeleteUser = () => {
+    let token = user.token;
+    var bodyData = {
+      "UserUpdateType": "Deactivate"
+    }
+    fetch(config.API_URL+'user', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(bodyData)
+    }).then(data => {
+      console.log(data);
+        Alert.alert(
+          'Deactivate account - Success',
+          data.message,
+          [
+          { text: 'Okey', onPress: () => {signOut()} }
+          ],
+          { cancelable: false }
+        );
+        return;
+      })
+      .catch(err => {
+        Alert.alert(
+          'Deactivate account - Error',
+          'Could not deactivate account! Please try again shortly.',
+          [
+          { text: 'Okey', onPress: () => {signOut()} }
+          ],
+          { cancelable: false }
+        );
+        console.log(err);
+      });
+  }
+
+  const ChangePassword = () => {
+    let token = user.token;
+    var bodyData = {
+      "Password": data.password,
+      "UserUpdateType": "Password"
+    }
+    if (data.password.length >= 8 && /(?=.*[0-9])/.test(data.password)) {
+      fetch(config.API_URL+'user', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(bodyData)
+      }).then(data => {
+        console.log(data);
+          Alert.alert(
+            'Password change - Success',
+            data.message,
+            [
+            { text: 'Okey', onPress: () => {} }
+            ],
+            { cancelable: false }
+          );
+          setData({password: ''});
+          return;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    } else {
+      Alert.alert(
+        'Password change - Error',
+        'Password is too short (atleast 8 symbols and 1 numeric character)',
+        [
+        { text: 'Okey', onPress: () => {} }
+        ],
+        { cancelable: true }
+      );
+      setData({password: ''});
+    }
+  }
   
   return (
     <View>
-        <View style={styles.header} />
-        <Image style={styles.avatar} source={require('../assets/user_icon.png')}/>
+        <ImageBackground style={styles.header} source={require('../assets/profile_bg.jpg')} />
+        <Image style={styles.avatar} source={{uri: `data:image/jpg;base64,${user.profileImage != null ? user.profileImage : defaultImages.profile}`}}/>
         <View style={styles.body}>
           <View style={styles.bodyContent}>
             <Text style={{color: textColor, fontSize:28, fontWeight:'600', textDecorationLine: 'underline'}}>{user.username}</Text>
@@ -221,18 +339,23 @@ const ProfileScreen = () =>  {
             </TouchableOpacity>
           </View>
       </View>
-      <Modal isVisible={optionSelected} style={styles.modalView}>
-        { confirmMenu() }
+      <Modal isVisible={optionSelected} style={[styles.modalView, {backgroundColor: theme.dark ? themeColors.lightGrey : themeColors.white}]} >
+        { optionSelected ? confirmMenu() : <></> }
       </Modal>
     </View>
   );
 }
 
+const themeColors = {
+  white: "#FFFFFF",
+  lightGrey: "#242424",
+  dark: "#1c1c1c",
+};
+
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
   header:{
-    backgroundColor: "#1db954",
     height:200,
   },
   avatar: {
@@ -256,7 +379,7 @@ const styles = StyleSheet.create({
     flex: 0.2
   },
   bodyContent: {
-    flex: 1,
+    flex: 0,
     alignItems: 'center',
     padding:30,
   },
@@ -285,34 +408,34 @@ const styles = StyleSheet.create({
   },
   modalView: {
     flex: 1,
-    height: "35%",
+    height: '50%',
+    width: '75%',
     backgroundColor: '#fff',
     borderRadius: 20,
     paddingVertical: 0,
-    alignItems: "center",
+    alignItems: 'center',
     alignSelf: 'center',
     position: 'absolute'
   },
   modalButtonContainer: {
     height: 45,
     marginHorizontal: 20,
-    marginTop: 50,
-    width: "80%",
+    marginTop: '75%',
+    width: "100%",
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom:20,
     borderRadius:10,
     backgroundColor: "#1db954",
     fontWeight: "bold"
   },
   modalBodyContent: {
-    height:45,
-    width:100,
+    height:'70%',
+    width:'50%',
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 20,
+    marginLeft: '42%'
   },
   textInput: {
     flex: 1,
@@ -323,7 +446,8 @@ const styles = StyleSheet.create({
   },
   text_footer: {
     color: '#05375a',
-    fontSize: 18
+    fontSize: 18,
+    marginTop: 50
   },
   action: {
     flexDirection: 'row',
