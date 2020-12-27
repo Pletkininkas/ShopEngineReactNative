@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-p
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
-import config from '../../config'
+import config, {user} from '../../config'
 import styles from './styles.js'
 import State from './state.js'
 import { ImageManipulator } from 'expo-image-crop'
@@ -160,7 +160,51 @@ const ScanScreen = ({ navigation }) => {
 
     const _onCompareListConfirm = async () =>
     {
+        if(user.automaticallySaveReceipts){
+            setLoadingMsg("Saving to shopping history...")
+            setScreenState(State.ScreenState.showLoading);
+            let products = await _convertProductsList();
+            await _saveToHistoryAsync(products);
+            _showToast("Products saved to history")
+        }
         navigation.navigate('Home');
+    }
+
+    const _convertProductsList = async () =>
+    {
+        let products = [];
+        for(var i in scannedList){
+            products.push({
+                name: scannedList[i].name,
+                shop: scannedList[i].shop,
+                price: scannedList[i].price,
+                discount: scannedList[i].discount,
+                pricePerQuantity: scannedList[i].pricePerQuantity
+            })
+        }
+        return products;
+    }
+
+    const _saveToHistoryAsync = async (products) =>
+    {
+        try {
+            let response = await fetch(
+                config.API_URL + 'receipt', {
+              method: 'POST',
+              headers: {
+                  Accept: "application/json",
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + user.token
+              },
+              body: JSON.stringify({products})
+              }
+            );
+            console.log("--------------")
+            console.log(response)
+            return response;
+          } catch (error) {
+            console.error('ERROR:' + error);
+          }
     }
 
     const _onListConfirmPress = async () =>
