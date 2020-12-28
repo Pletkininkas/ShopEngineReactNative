@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { View, Text, Dimensions, ScrollView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { LineChart, BarChart, StackedBarChart} from "react-native-chart-kit";
 import moment from 'moment';
@@ -24,7 +24,7 @@ const StatisticsScreen = ({navigation}) => {
     graphData.length = 12; 
     var savedMoneyData1 = [];
     savedMoneyData1.length = 12;
-    //var savedMoneyData2 = 0;  
+    var savedMoneyData2 = 0;  
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -82,24 +82,21 @@ const StatisticsScreen = ({navigation}) => {
           graphData[i] +=  element.total;
           total += element.total;
 
-          // element.receiptProducts.forEach(product => {
-          //   if(i==10||i==11){
-          //     //savedMoneyData1[i-10]+=product.discount;
-          //     savedMoneyData1[i-10]+=(product.discount*(-1));
-          //     console.log(savedMoneyData1[1]);
-          //   }
-          //   savedMoneyData2+=product.discount;
-          // });
+          element.receiptProducts.forEach(product => {
+            if(i==10||i==11){
+              savedMoneyData1[i-10]+=(product.discount*(-1));
+            }
+            savedMoneyData2+=(product.discount*(-1));
+          });
 
           totalNumOfShoppings++;
 
           if(i==10||i==11){
             numOfShoppings[i-10]++;
 
-            element.receiptProducts.forEach(product => {
-                //savedMoneyData1[i-10]+=product.discount;
-                savedMoneyData1[i-10]+=(product.discount*(-1));
-            });
+            // element.receiptProducts.forEach(product => {
+            //     savedMoneyData1[i-10]+=(product.discount*(-1));
+            // });
           }
           break;
         }
@@ -167,13 +164,20 @@ const StatisticsScreen = ({navigation}) => {
     var average = calculateAverage(total, totalNumOfShoppings)
     avgList.fill(average);
 
+    savedMoneyData2 = Math.round(savedMoneyData2*100)/100;
+    var savedList = [];
+    savedList.length =12;
+    savedList.fill(savedMoneyData2);
+
     return (
       <View style={styles().containerm}>
           <View>
               <Text style={styles().title}>Statistics</Text>
           </View>
           <View style={styles().bodym} justifyContent={'space-evenly'}>
-          <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
+          <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text>
+          <View> 
+          <ScrollView horizontal pagingEnabled={true}>
           <LineChart
             data={{
                 labels: months,
@@ -244,6 +248,74 @@ const StatisticsScreen = ({navigation}) => {
                               </View> : null
                               }}
                 />
+          <LineChart
+            data={{
+                labels: months,
+                datasets: [
+                    {
+                        data: savedList,
+                        withDots: false,
+                        strokeWidth: 4,
+                        color: () => 'skyblue',            
+                    },
+                    {
+                      data: graphData,  
+                      color: () => configColors.green                      
+                  }
+                ],
+                legend: [`You've saved (${savedMoneyData2}€)`, "Total spendings"]
+                }}
+                width={Dimensions.get("window").width - 20}
+                height={220}
+                yAxisSuffix="€"
+                yAxisInterval={1}
+                fromZero = "true"
+                verticalLabelRotation={30}
+                chartConfig={lineChartConfig}
+                bezier
+                style={{
+                  marginVertical: 8,
+                  borderRadius: 16
+                }}
+
+                onDataPointClick={  
+                  (data) => {
+                  let isSamePoint = (tooltipPos.x === data.x 
+                                      && tooltipPos.y ===  data.y)   
+                  isSamePoint ? setTooltipPos((previousState)=> {
+                                     return {
+                                          ...previousState, 
+                                          value: data.value,
+                                          visible: !previousState.visible}
+                                     })
+                               : 
+                             setTooltipPos({x: data.x, 
+                                value: data.value, y: data.y,
+                                visible: true
+                             });   
+                            }
+                          }
+                          decorator={() => {   
+                            return tooltipPos.visible ? 
+                            <View>    
+                              <Svg>          
+                                <Rect x={tooltipPos.x -15} y={tooltipPos.y + 10} width="40"  
+                                  height="30" fill={configColors.green} fillOpacity="0.7" />
+                                      <TextSVG          
+                                        x={tooltipPos.x + 5}         
+                                        y={tooltipPos.y + 30}
+                                        fill={colors.text}
+                                        fontSize="12"          
+                                        //fontWeight="bold"          
+                                        textAnchor="middle">          
+                                        {tooltipPos.value + "€"}     
+                                      </TextSVG>    
+                                </Svg>
+                              </View> : null
+                              }}
+                />
+                </ScrollView>
+                </View>
 
                 <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
 
@@ -252,7 +324,6 @@ const StatisticsScreen = ({navigation}) => {
                       labels: [months[10], months[11]],
                       legend: ['You\'ve spent', 'You\'ve saved'],
                       data: [
-                        //calculateAverage(savedMoneyData1[0], numOfShoppings[0])
                         [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(savedMoneyData1[0], numOfShoppings[0])], 
                         [calculateAverage(graphData[11], numOfShoppings[1]), calculateAverage(savedMoneyData1[1], numOfShoppings[1])]
                       ],
