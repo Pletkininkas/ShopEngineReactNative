@@ -99,7 +99,6 @@ const StatisticsScreen = ({navigation}) => {
             element.receiptProducts.forEach(product => {
                 //savedMoneyData1[i-10]+=product.discount;
                 savedMoneyData1[i-10]+=(product.discount*(-1));
-                console.log(savedMoneyData1[1]);
             });
           }
           break;
@@ -169,9 +168,12 @@ const StatisticsScreen = ({navigation}) => {
     avgList.fill(average);
 
     return (
-      <View style={styles().container} backgroundColor={colors.background}>
+      <View style={styles().containerm}>
+          <View>
+              <Text style={styles().title}>Statistics</Text>
+          </View>
           <View style={styles().bodym} justifyContent={'space-evenly'}>
-          <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
+          <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Year Spendings Pattern</Text> 
           <LineChart
             data={{
                 labels: months,
@@ -243,7 +245,7 @@ const StatisticsScreen = ({navigation}) => {
                               }}
                 />
 
-                <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
+                <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
 
                 <StackedBarChart
                     data={{
