@@ -22,8 +22,8 @@ export default StyleSheet.create({
       height: 40,
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: 20,
-      marginBottom: 20,
+      marginTop: 10,
+      marginBottom: 10,
       backgroundColor: "#1db954",
       borderRadius: 10,
     },
@@ -32,8 +32,8 @@ export default StyleSheet.create({
       height: 40,
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: 20,
-      marginBottom: 20,
+      marginTop: 10,
+      marginBottom: 10,
       backgroundColor: "#667069",
       borderRadius: 10,
     },
@@ -52,5 +52,15 @@ export default StyleSheet.create({
     divider: {
       flexDirection: 'row',
       justifyContent: 'space-between'
+    },
+    modalShopImage: {
+      width: 50,
+      height: 50,
+      resizeMode: 'contain'
+    },
+    largeShopImage: {
+      width: 80,
+      height: 80,
+      resizeMode: 'contain'
     }
   });

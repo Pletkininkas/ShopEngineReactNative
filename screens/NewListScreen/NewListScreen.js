@@ -12,7 +12,7 @@ import { debug, max, min } from 'react-native-reanimated';
 import { ThemeColors } from 'react-navigation';
 import {ShoppingListContext} from '../../components/context'
 
-const NewListScreen = ({navigation, selectedList}) => {
+const NewListScreen = ({navigation}) => {
 
   const [screenState, setScreenState] = useState(State.ScreenState.viewingList)
   const [products, setProducts] = useState([]);
@@ -39,15 +39,12 @@ const NewListScreen = ({navigation, selectedList}) => {
     const unsubscribe = navigation.addListener('blur', () => {
       listsContext.setCurrentList(null);
       setShoppingList([]);
-      setSelectedAmount(1);
       setSelectedItem(null);
-      setAvailableShops([]);
       setSelectedShop(null);
       setOptimizedList([]);
       setListShops([]);
+      setOnlyReplaceUnspecifiedShops(false);
       setScreenState(viewingList);
-      setDisplayedProducts(products);
-      _searchProducts("");
     });
     return unsubscribe;
   }, [navigation]);
@@ -55,14 +52,10 @@ const NewListScreen = ({navigation, selectedList}) => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       setSelectedAmount(1);
-      setSelectedItem(null);
       setAvailableShops([]);
       setSelectedShop(null);
-      setOptimizedList([]);
       setChosenShops([]);
-      setListShops([]);
       setScreenState(viewingList);
-      _searchProducts("");
     });
     return unsubscribe;
   }, [navigation]);
@@ -111,6 +104,7 @@ const NewListScreen = ({navigation, selectedList}) => {
   }
 
   const _selectItem = () => {
+    _searchProducts("");
     setScreenState(selectingItem);
   }
 
@@ -200,6 +194,24 @@ const NewListScreen = ({navigation, selectedList}) => {
     return priceString;
   }
 
+  const renderShopLogo = (shopName, specificStyle) => {
+    switch (shopName) {
+      case 'NORFA':
+        return <Image style={specificStyle != null ? specificStyle : screenStyles.modalShopImage} source={require('../../assets/shop_logos/NORFA.png')}></Image>
+      case 'MAXIMA':
+        return <Image style={specificStyle != null ? specificStyle : screenStyles.modalShopImage} source={require('../../assets/shop_logos/MAXIMA.png')}></Image>
+      case 'IKI':
+        return <Image style={specificStyle != null ? specificStyle : screenStyles.modalShopImage} source={require('../../assets/shop_logos/IKI.png')}></Image>
+      case 'RIMI':
+        return <Image style={specificStyle != null ? specificStyle : screenStyles.modalShopImage} source={require('../../assets/shop_logos/RIMI.png')}></Image>
+      case 'LIDL':
+        return <Image style={specificStyle != null ? specificStyle : screenStyles.modalShopImage} source={require('../../assets/shop_logos/LIDL.png')}></Image>
+      default:
+        //return <Text style={{fontSize: 20, textAlign: 'center'}}>?</Text>
+        break;
+    }
+  }
+
   const _getListShops = () => {
     var listOfShops = [];
     for(var item in shoppingList){
@@ -242,7 +254,16 @@ const NewListScreen = ({navigation, selectedList}) => {
   }
 
   const _replaceShoppingList = () => {
-    setShoppingList(optimizedList);
+
+    var newList = []
+
+    for(var id in optimizedList){
+      var item = optimizedList[id];
+      var shop = item.shop == "UNKNOWN" ? "ANY" : item.shop; 
+      newList.push({name: item.name, unit: item.unit, amount: item.amount, shop: shop});
+    }
+
+    setShoppingList(newList);
     setScreenState(viewingList);
     setOptimizedList([]);
     _searchProducts("");
@@ -322,35 +343,39 @@ const NewListScreen = ({navigation, selectedList}) => {
       return (
         <View style={styles().containerm}>
           <View style={styles().body}>
-            <View style={{flexDirection: 'row', justifyContent: "center", padding: 10}}>
+            <View style={{flexDirection: 'row', justifyContent: "center", padding: 10, marginLeft: '3%', marginRight: '3%'}}>
               <TextInput
-                  style={{height: 70}}
+                  style={{height: 80, flex: 2}}
                   placeholder="Name"
+                  value={listName}
                   defaultValue={listName}
                   onChangeText={text => setListName(text)}/>
-              <View style={{flex: 0.5}}/>
+              <View style={{flex: 0.3}}/>
               <TouchableOpacity 
-                  style={shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
+                  style={[shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton, {flex: 2}]} 
                   onPress={() => _saveList()}
                   disabled={shoppingList.length > 0 ? false : true}>
                   <Text style={{color: textColor}}>Save List</Text>
               </TouchableOpacity>
             </View>
-            <View alignItems="center">
+            <View alignItems="center" style={{marginLeft: '3%', marginRight: '3%'}}>
+              <View style={{flexDirection: 'row', padding: 10}}>
+                <Text style={{marginBottom: 10, color: textColor, alignSelf: "center", marginTop: 10, flexWrap: "wrap", flex: 2}}>Estimated Price:{"\n"}{displayPrice(calculatePriceRange(shoppingList))}</Text>
+                <View style={{flex: 0.3}}/>
+                <TouchableOpacity 
+                  style={[shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton, {flex: 2}]} 
+                  disabled={shoppingList.length > 0 ? false : true} 
+                  onPress={() => _configureOptimization()}>
+                  <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Find Cheaper List</Text>
+                </TouchableOpacity>
+              </View>
               <TouchableOpacity 
-                style={[screenStyles.button, {marginBottom: 0}]} 
+                style={[screenStyles.button]} 
                 onPress={() => _selectItem()}>
                 <Text style={{color: textColor}}>Add Item</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
-                disabled={shoppingList.length > 0 ? false : true} 
-                onPress={() => _configureOptimization()}>
-                <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Find Cheaper List</Text>
-              </TouchableOpacity>
-              <Text style={{marginBottom: 20, color: textColor}}>Estimated Price: {displayPrice(calculatePriceRange(shoppingList))}</Text>
             </View>
-            <SafeAreaView style={{color:"#ccc", marginBottom: 270}}>
+            <SafeAreaView style={{color:"#ccc", marginBottom: 240}}>
                 <FlatList
                   decelerationRate='normal'
                   showsVerticalScrollIndicator={false}
@@ -360,11 +385,16 @@ const NewListScreen = ({navigation, selectedList}) => {
                       onPress={() => {}} 
                       style={[screenStyles.item, {backgroundColor: itemColor}]}>
                       <View style={screenStyles.divider}>
-                        <View style={screenStyles.leftText}>
-                          <Text style={{color: textColor}}>{item.name}</Text>
-                          <Text style={{color: textColor}}>{item.unit}</Text>
-                          <Text style={{color: textColor}}>x{item.amount}</Text>
-                          <Text style={{color: textColor}}>{item.shop}</Text>
+                        <View style={[screenStyles.leftText, {flexDirection: 'row'}]}>
+                          <View style={{flex: 1}}>
+                            <Text style={{color: textColor, fontSize: 16}}>{item.name}</Text>
+                            <Text style={{color: textColor}}>{item.unit}</Text>
+                            <Text style={{color: textColor}}>x{item.amount}</Text>
+                            <Text style={{color: textColor}}>{item.shop}</Text>
+                          </View>
+                          <View>
+                            {renderShopLogo(item.shop, screenStyles.largeShopImage)}
+                          </View>
                         </View>
                       </View>
                       <View alignItems="center">
@@ -425,7 +455,8 @@ const NewListScreen = ({navigation, selectedList}) => {
               <Text style={[screenStyles.item, {backgroundColor: itemColor}, {color: textColor}]}>{selectedItem.name}</Text>
             </View>
             <TextInput 
-              style={{marginLeft: "30%", marginRight: "30%"}} 
+              style={{marginLeft: "30%", marginRight: "30%"}}
+              alignItems="center"
               placeholder="Amount" 
               defaultValue={selectedAmount.toString()} 
               keyboardType="decimal-pad" 
@@ -445,10 +476,15 @@ const NewListScreen = ({navigation, selectedList}) => {
                   <TouchableOpacity 
                     onPress={() => setSelectedShop(item.shop)} 
                     style={item.shop === selectedShop ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: itemColor}]}>
-                    <View style={screenStyles.divider}>
-                      <View style={screenStyles.leftText}>
-                        <Text style={{color: textColor}}>Shop: {item.shop}</Text>
-                        <Text style={{color: textColor}}>Price: {item.price}</Text>
+                    <View style={[screenStyles.divider]}>
+                      <View style={[screenStyles.leftText, {flexDirection: 'row', width: '100%', flex: 1, display: 'flex'}]}>
+                        <View style={{alignItems:'flex-start', justifyContent:'center', flex: 1}}>
+                          <Text style={{color: textColor}}>Shop: {item.shop}</Text>
+                          <Text style={{color: textColor}}>Price: {item.price}</Text>
+                        </View>
+                        <View style={{alignItems:'flex-end', justifyContent:'center'}}>
+                          {renderShopLogo(item.shop, null)}
+                        </View>
                       </View>
                     </View>
                   </TouchableOpacity>)}
@@ -525,11 +561,17 @@ const NewListScreen = ({navigation, selectedList}) => {
                       onPress={() => {}} 
                       style={[screenStyles.item, {backgroundColor: itemColor}]}>
                       <View style={screenStyles.divider}>
-                        <View style={screenStyles.leftText}>
-                          <Text style={{color: textColor}}>{item.name}</Text>
-                          <Text style={{color: textColor}}>{item.shop}</Text>
-                          <Text style={{color: textColor}}>{item.amount}</Text>
-                          <Text style={{color: textColor}}>{(item.pricePerUnit * item.amount).toFixed(2)}</Text>
+                        <View style={[screenStyles.leftText, {flexDirection: 'row'}]}>
+                          <View style={{flex: 1}}>
+                            <Text style={{color: textColor, fontSize: 16}}>{item.name}</Text>
+                            <Text style={{color: textColor}}>{item.unit}</Text>
+                            <Text style={{color: textColor}}>x{item.amount}</Text>
+                            <Text style={{color: textColor}}>{item.shop}</Text>
+                            <Text style={{color: textColor}}>{(item.pricePerUnit * item.amount).toFixed(2)}</Text>
+                          </View>
+                          <View>
+                            {renderShopLogo(item.shop, screenStyles.largeShopImage)}
+                          </View>
                         </View>
                       </View>
                     </TouchableOpacity>)}

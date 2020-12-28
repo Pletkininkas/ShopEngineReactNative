@@ -47,6 +47,7 @@ const HomeScreen = ({ navigation }) => {
                   style={[screenStyle.item, {backgroundColor: itemColor, alignItems: "center"}]}
                   onPress={() => selectList(item)}>
                   <Text style={{fontSize: 16, margin: 10, color: textColor}}>{item.name}</Text>
+                  
                 </TouchableOpacity>
               )}
               renderHiddenItem={ ({item}) => (
@@ -54,7 +55,7 @@ const HomeScreen = ({ navigation }) => {
                   <TouchableOpacity 
                     style={screenStyle.backRightBtn} 
                     onPress={() => deleteList(item)}>
-                    <Ionicons name='ios-trash' size={50}/>
+                    <Ionicons name='ios-trash' size={40}/>
                   </TouchableOpacity>
                 </View>
               )}
@@ -89,7 +90,7 @@ const screenStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 'auto',
-    width: 40,
+    width: 40
   },
   button:{
     width: "40%",
@@ -100,6 +101,5 @@ const screenStyle = StyleSheet.create({
     marginBottom: 20,
     backgroundColor: "#1db954",
     borderRadius: 10,
-  }
+  },
 });
-export default HomeScreen;
