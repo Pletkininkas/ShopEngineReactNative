@@ -88,7 +88,7 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
-                setScreenState(State.ScreenState.pickingPhotoMethod)   
+                setScreenState(State.ScreenState.selectingShop)   
                     
                 //selectedItem = scannedShop id
                      
