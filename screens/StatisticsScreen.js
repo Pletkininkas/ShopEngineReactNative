@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Button, View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import {
-    LineChart,
-    BarChart
-  } from "react-native-chart-kit";
+import { LineChart, BarChart} from "react-native-chart-kit";
 import moment from 'moment';
+import {Svg, Rect, Text as TextSVG} from 'react-native-svg';
 import styles from '../config/styles';
 import configColors from '../config/colors';
 import config, { user } from '../config';
@@ -15,7 +13,13 @@ const StatisticsScreen = ({navigation}) => {
     const {colors} = useTheme();
     const [months, setMonths] = React.useState(['']);
     const [receipts, setReceipts] = React.useState([]);
+    const [tooltipPos,setTooltipPos] = useState(
+      { x:0, y:0, visible:false, value:0 });
     var numOfShoppings = [0, 0];
+    var totalNumOfShoppings = 0;
+    var total = 0;
+    var avgList = [];
+    avgList.length = 12; 
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -39,6 +43,7 @@ const StatisticsScreen = ({navigation}) => {
             });    
         });
         return unsubscribe;
+        
     }, [navigation]);
 
   function calculateAverage(numerator, denominator) {
@@ -54,6 +59,9 @@ const StatisticsScreen = ({navigation}) => {
     var list = [];
     list.length = 12; 
     list.fill(0);
+    list[10] = 14.78;//hardcoded value
+    total = 14.78;//hardcoded value
+    numOfShoppings[0]=2;//hardcoded value
     receipts.forEach(element => {
 
       var date = new Date(element.date);
@@ -68,6 +76,8 @@ const StatisticsScreen = ({navigation}) => {
         if (year === startDate.year() && month === startDate.month())
         {
           list[i] +=  element.total;
+          total += element.total;
+          totalNumOfShoppings++;
           if(i==10||i==11){
             numOfShoppings[i-10]++;
           }
@@ -97,28 +107,47 @@ const StatisticsScreen = ({navigation}) => {
         labels: [months[10], months[11]],
         datasets: [
           {
-            data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])]
+            data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])],
           }
         ]
       };
 
-    const chartConfig = {
+    const lineChartConfig = {
       backgroundGradientFrom: configColors.green,
       backgroundGradientFromOpacity: 0,
       backgroundGradientToOpacity: 0.5,
       backgroundGradientTo: configColors.green,
       color: (opacity = 1) => colors.text,
       barPercentage: 2,
-      useShadowColorFromDataset: false, 
       data: barData.datasets,
       decimalPlaces: 2, 
       labelColor: (opacity = 1) => colors.text,
+      fillShadowGradientOpacity:0.5,
+      style: {
+          borderRadius: 16
+      },
+      useShadowColorFromDataset: true        
+    };
+
+    const barChartConfig = {
+      backgroundGradientFrom: configColors.green,
+      backgroundGradientFromOpacity: 0,
+      backgroundGradientToOpacity: 0.5,
+      backgroundGradientTo: configColors.green,
+      color: () => colors.text,
+      barPercentage: 2,
+      data: barData.datasets,
+      decimalPlaces: 2, 
+      labelColor: () => colors.text,
       fillShadowGradient:configColors.green,
       fillShadowGradientOpacity:1,
       style: {
           borderRadius: 16
-      }        
+      },        
     };
+
+    var average = calculateAverage(total, totalNumOfShoppings)
+    avgList.fill(average);
 
     return (
       <View style={styles().container} backgroundColor={colors.background}>
@@ -129,9 +158,17 @@ const StatisticsScreen = ({navigation}) => {
                 labels: months,
                 datasets: [
                     {
-                        data: graphData 
-                    }
-                ]
+                        data: avgList,
+                        withDots: false,
+                        strokeWidth: 4,
+                        color: () => colors.text,            
+                    },
+                    {
+                      data: graphData,  
+                      color: () => configColors.green                      
+                  }
+                ],
+                legend: [`Year average (${average}€)`, "Total spendings"]
                 }}
                 width={Dimensions.get("window").width - 20}
                 height={220}
@@ -139,7 +176,52 @@ const StatisticsScreen = ({navigation}) => {
                 yAxisInterval={1}
                 fromZero = "true"
                 verticalLabelRotation={30}
-                chartConfig={chartConfig}
+                chartConfig={lineChartConfig}
+                bezier
+                style={{
+                  marginVertical: 8,
+                  borderRadius: 16
+                }}
+
+                onDataPointClick={  
+                  (data) => {
+                  // check if we have clicked on the same point again
+                  let isSamePoint = (tooltipPos.x === data.x 
+                                      && tooltipPos.y ===  data.y)
+                
+                  // if clicked on the same point again toggle visibility
+                  // else,render tooltip to new position and update its value     
+                  isSamePoint ? setTooltipPos((previousState)=> {
+                                     return {
+                                          ...previousState, 
+                                          value: data.value,
+                                          visible: !previousState.visible}
+                                     })
+                               : 
+                             setTooltipPos({x: data.x, 
+                                value: data.value, y: data.y,
+                                visible: true
+                             });   
+                            } // end function
+                          }
+                          decorator={() => {   
+                            return tooltipPos.visible ? 
+                            <View>    
+                              <Svg>          
+                                <Rect x={tooltipPos.x -15} y={tooltipPos.y + 10} width="40"  
+                                  height="30" fill={configColors.green} fillOpacity="0.7" />
+                                      <TextSVG          
+                                        x={tooltipPos.x + 5}         
+                                        y={tooltipPos.y + 30}
+                                        fill={colors.text}
+                                        fontSize="12"          
+                                        //fontWeight="bold"          
+                                        textAnchor="middle">          
+                                        {tooltipPos.value + "€"}     
+                                      </TextSVG>    
+                                </Svg>
+                              </View> : null
+                              }}
                 />
 
                 <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
@@ -150,8 +232,13 @@ const StatisticsScreen = ({navigation}) => {
                     height={220}
                     yAxisSuffix="€"
                     fromZero = "true"
-                    chartConfig={chartConfig}
+                    chartConfig={barChartConfig}
                     showValuesOnTopOfBars="true"
+                    bezier
+                    style={{
+                      marginVertical: 8,
+                      borderRadius: 16
+                    }}
                 />
             </View>             
             
