@@ -139,7 +139,7 @@ export function DrawerContent(props) {
                                 </View>
                                 <View style={styles.section}>
                                     <Paragraph style={styles.paragraph, styles.caption}>{user.receiptCount}</Paragraph>
-                                    <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
+                                    <Caption style={styles.caption, {marginLeft: 15}}>Total Receipts Scanned</Caption>
                                 </View>
                             </View>
                         </View>

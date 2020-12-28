@@ -23,13 +23,14 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext, apiUrl } from './components/context';
+import { AuthContext, apiUrl, ShoppingListContext } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
 import AsyncStorage from '@react-native-community/async-storage'
 
 import config, { user, setUser } from './config'
+import { set } from 'react-native-reanimated';
 
 const Drawer = createDrawerNavigator();
 
@@ -39,8 +40,13 @@ const Drawer = createDrawerNavigator();
 
 const App = () => {
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
-
+  const [shoppingLists, setShoppingLists] = React.useState([]);
+  const [currentList, setCurrentList] = React.useState(null);
   const [screenIsWaiting, setScreenIsWaiting] = React.useState(false);
+
+  useEffect(() => {
+    loadShoppingLists();
+  }, []);
 
   const initialLoginState = {
     isLoading: true,
@@ -71,6 +77,32 @@ const App = () => {
   }
 
   const theme = isDarkTheme ? CustomDarkTheme : CustomDefaultTheme;
+
+  const loadShoppingLists = async () => {
+    try{
+      let msg = await AsyncStorage.getItem('shoppingLists');
+      let loaded = await JSON.parse(msg);
+      console.log("Loaded: " + loaded);
+      if(Array.isArray(loaded)) setShoppingLists(loaded);
+      else setShoppingLists([]);
+    } catch(e) {
+      console.log("Failed to load:");
+      console.log(e);
+      setShoppingLists([]);
+    }
+  }
+
+  const saveShoppingLists = async (lists) => {
+    try{
+      console.log("Lists: " + lists);
+      await AsyncStorage.removeItem('shoppingLists');
+      var json = JSON.stringify(lists);
+      console.log("Saved: " + json);
+      await AsyncStorage.setItem('shoppingLists', json)
+    } catch(e) {
+      console.log(e);
+    }
+  }
 
   const loginReducer = (prevState, action) => {
     switch( action.type ) {
@@ -256,20 +288,22 @@ const App = () => {
       <PaperProvider theme={theme}>
         <StatusBar hidden={true} />
           <AuthContext.Provider value={authContext}>
-            <NavigationContainer theme={theme}>
-              { loginState.userToken != null ? (
-                <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
-                  <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
-                  <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
-                  <Drawer.Screen name="Statistics" component={StatisticsScreen} />
-                  <Drawer.Screen name="Profile" component={ProfileScreen} />
-                  <Drawer.Screen name="Settings" component={SettingsScreen} />
-              </Drawer.Navigator>
-              )
-            :
-              <RootStackScreen/>
-            }
-            </NavigationContainer>
+            <ShoppingListContext.Provider value = {{shoppingLists: shoppingLists, currentList: currentList, setCurrentList: setCurrentList, setShoppingLists: setShoppingLists, saveLists: saveShoppingLists}}>
+              <NavigationContainer theme={theme}>
+                { loginState.userToken != null ? (
+                  <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+                    <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
+                    <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
+                    <Drawer.Screen name="Statistics" component={StatisticsScreen} />
+                    <Drawer.Screen name="Profile" component={ProfileScreen} />
+                    <Drawer.Screen name="Settings" component={SettingsScreen} />
+                </Drawer.Navigator>
+                )
+              :
+                <RootStackScreen/>
+              }
+              </NavigationContainer>
+            </ShoppingListContext.Provider>
           </AuthContext.Provider>
       </PaperProvider>
     );
