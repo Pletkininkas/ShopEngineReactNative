@@ -40,7 +40,7 @@ const SettingsScreen = ({ navigation }) => {
   const [language, setLanguage] = useState("English");
   const [renderAbout, setRenderAbout] = useState(false);
   const [renderReport, setRenderReport] = useState(false);
-  const[reportText, setReportText] = useState("");
+  const [reportText, setReportText] = useState("");
 
 
 
@@ -55,14 +55,39 @@ const SettingsScreen = ({ navigation }) => {
 }, [navigation]);
 
 
-  const _onSendReportPress = () =>{
-    // send report to api to store in the db
+  const _onSendReportPress = async () =>{
     setRenderReport(false);
-    if (Platform.OS === 'android') {
-      ToastAndroid.show("Thank you, report sent!", ToastAndroid.SHORT)
-  } else {
-      Alert.alert("Thank you, report sent!");
-  }
+    try {
+      let token = user.token;
+      let response = await fetch(
+          config.API_URL + 'report', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: '{\"Problem\":\"'+reportText+'\"}'
+        }
+      );
+      let json = await response.json();
+      if (json.success) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show("Thank you, report sent!", ToastAndroid.SHORT)
+        } else {
+          Alert.alert("Thank you, report sent!");
+        }
+      }
+      else {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(json.message, ToastAndroid.SHORT)
+        } else {
+          Alert.alert(json.message);
+        }
+      }
+    } catch (error) {
+      console.error('ERROR:' + error);
+    }
   }
 
   if (renderAbout) {
@@ -134,8 +159,7 @@ const SettingsScreen = ({ navigation }) => {
             <TextInput multiline={true} 
             placeholder="Type here"
             numberOfLines={16}
-            onChangeText={(text) => setReportText({text})}
-            value={reportText} 
+            onChangeText={(props)=> {setReportText(props)}}
             style={{backgroundColor: theme.dark ? theme.colors.background: colors.white, textAlignVertical:'top', color: theme.dark ? colors.white : colors.dark}}
             
             />
