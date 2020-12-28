@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { LineChart, BarChart} from "react-native-chart-kit";
+import { LineChart, BarChart, StackedBarChart} from "react-native-chart-kit";
 import moment from 'moment';
 import {Svg, Rect, Text as TextSVG} from 'react-native-svg';
 import styles from '../config/styles';
@@ -19,7 +19,12 @@ const StatisticsScreen = ({navigation}) => {
     var totalNumOfShoppings = 0;
     var total = 0;
     var avgList = [];
-    avgList.length = 12; 
+    avgList.length = 12;
+    var graphData = [];
+    graphData.length = 12; 
+    var savedMoneyData1 = [];
+    savedMoneyData1.length = 12;
+    //var savedMoneyData2 = 0;  
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -56,10 +61,9 @@ const StatisticsScreen = ({navigation}) => {
   }
 
   function getGraphData() {
-    var list = [];
-    list.length = 12; 
-    list.fill(0);
-    list[10] = 14.78;//hardcoded value
+    graphData.fill(0);
+    savedMoneyData1.fill(0);
+    graphData[10] = 14.78;//hardcoded value
     total = 14.78;//hardcoded value
     numOfShoppings[0]=2;//hardcoded value
     receipts.forEach(element => {
@@ -75,17 +79,33 @@ const StatisticsScreen = ({navigation}) => {
       for (i = 0; startDate < currentDate; i++, startDate.add(1, 'months')) {
         if (year === startDate.year() && month === startDate.month())
         {
-          list[i] +=  element.total;
+          graphData[i] +=  element.total;
           total += element.total;
+
+          // element.receiptProducts.forEach(product => {
+          //   if(i==10||i==11){
+          //     //savedMoneyData1[i-10]+=product.discount;
+          //     savedMoneyData1[i-10]+=(product.discount*(-1));
+          //     console.log(savedMoneyData1[1]);
+          //   }
+          //   savedMoneyData2+=product.discount;
+          // });
+
           totalNumOfShoppings++;
+
           if(i==10||i==11){
             numOfShoppings[i-10]++;
+
+            element.receiptProducts.forEach(product => {
+                //savedMoneyData1[i-10]+=product.discount;
+                savedMoneyData1[i-10]+=(product.discount*(-1));
+                console.log(savedMoneyData1[1]);
+            });
           }
           break;
         }
       }
     });
-  return list;
 }
     
   function getListOfAllMonths() {
@@ -101,27 +121,26 @@ const StatisticsScreen = ({navigation}) => {
         return list;
     }
 
-    var graphData = getGraphData();
+    getGraphData();
 
-    const barData = {
-        labels: [months[10], months[11]],
-        datasets: [
-          {
-            data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])],
-          }
-        ]
-      };
+    // const barData = {
+    //     labels: [months[10], months[11]],
+    //     datasets: [
+    //       {
+    //         data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])],
+    //       }
+    //     ]
+    //   };
 
     const lineChartConfig = {
       backgroundGradientFrom: configColors.green,
       backgroundGradientFromOpacity: 0,
       backgroundGradientToOpacity: 0.5,
       backgroundGradientTo: configColors.green,
-      color: (opacity = 1) => colors.text,
+      color: () => colors.text,
       barPercentage: 2,
-      data: barData.datasets,
       decimalPlaces: 2, 
-      labelColor: (opacity = 1) => colors.text,
+      labelColor: () => colors.text,
       fillShadowGradientOpacity:0.5,
       style: {
           borderRadius: 16
@@ -136,7 +155,7 @@ const StatisticsScreen = ({navigation}) => {
       backgroundGradientTo: configColors.green,
       color: () => colors.text,
       barPercentage: 2,
-      data: barData.datasets,
+      //data: barData.datasets,
       decimalPlaces: 2, 
       labelColor: () => colors.text,
       fillShadowGradient:configColors.green,
@@ -226,7 +245,31 @@ const StatisticsScreen = ({navigation}) => {
 
                 <Text style={{fontSize: 30, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
 
-                <BarChart
+                <StackedBarChart
+                    data={{
+                      labels: [months[10], months[11]],
+                      legend: ['You\'ve spent', 'You\'ve saved'],
+                      data: [
+                        //calculateAverage(savedMoneyData1[0], numOfShoppings[0])
+                        [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(savedMoneyData1[0], numOfShoppings[0])], 
+                        [calculateAverage(graphData[11], numOfShoppings[1]), calculateAverage(savedMoneyData1[1], numOfShoppings[1])]
+                      ],
+                      barColors: [configColors.green, colors.background],
+                      
+                    }}
+                    width={Dimensions.get("window").width - 20}
+                    height={220}
+                    yAxisSuffix="€"
+                    fromZero = "true"
+                    chartConfig={barChartConfig}
+                    bezier
+                    style={{
+                      marginVertical: 8,
+                      borderRadius: 16
+                    }}
+                    
+                />
+                  {/* <BarChart
                     data={barData}
                     width={Dimensions.get("window").width - 20}
                     height={220}
@@ -239,7 +282,7 @@ const StatisticsScreen = ({navigation}) => {
                       marginVertical: 8,
                       borderRadius: 16
                     }}
-                />
+                /> */}
             </View>             
             
       </View>
