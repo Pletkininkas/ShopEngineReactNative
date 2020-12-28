@@ -42,7 +42,14 @@ export function DrawerContent(props) {
             return data.json();
             })
             .then(data => {
-            setReceiptsHistory(null, Object(data.data).length, data.data);
+            let saved = 0;
+            data.data.forEach(element => {
+                element.receiptProducts.forEach(product => {
+                    saved+=(product.discount*(-1));
+                });
+                
+            });
+            setReceiptsHistory(saved, Object(data.data).length, data.data);
             })
             .catch(err => {
             console.log(err);
