@@ -102,3 +102,4 @@ const screenStyle = StyleSheet.create({
     borderRadius: 10,
   }
 });
+export default HomeScreen;
