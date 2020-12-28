@@ -168,7 +168,7 @@ const StatisticsScreen = ({navigation}) => {
     var savedList = [];
     savedList.length =12;
     savedList.fill(savedMoneyData2);
-
+  
     return (
       <View style={styles().containerm}>
           <View>
@@ -330,6 +330,7 @@ const StatisticsScreen = ({navigation}) => {
                       barColors: [configColors.green, colors.background],
                       
                     }}
+                    
                     width={Dimensions.get("window").width - 20}
                     height={220}
                     yAxisSuffix="€"

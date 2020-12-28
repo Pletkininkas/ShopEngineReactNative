@@ -3,13 +3,14 @@ import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text,
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
-import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
+//import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
-import config from '../../config'
+import config, {user} from '../../config'
 import styles from './styles.js'
 import State from './state.js'
+import { ImageManipulator } from 'expo-image-crop'
 
 
 
@@ -87,7 +88,7 @@ const ScanScreen = ({ navigation }) => {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
                 // set state to picking shop and pre-selected shop to scanned shop 
                 setUri(result.uri)
-                setScreenState(State.ScreenState.pickingPhotoMethod)   
+                setScreenState(State.ScreenState.selectingShop)   
                     
                 //selectedItem = scannedShop id
                      
@@ -115,12 +116,12 @@ const ScanScreen = ({ navigation }) => {
         }
     }
 
-    const _readImage = async (par) =>{
-        setUri(par.uri)
+    const _readImage = async (pUri) =>{
+        setUri(pUri)
         setLoadingMsg('Reading image...')
         setScreenState(State.ScreenState.showLoading)
 
-        let datajson = await _getScannedListAsync(par.uri);
+        let datajson = await _getScannedListAsync(pUri);
         var data = []
         for(var i in datajson){
             data.push(datajson[i])
@@ -159,7 +160,51 @@ const ScanScreen = ({ navigation }) => {
 
     const _onCompareListConfirm = async () =>
     {
+        if(user.automaticallySaveReceipts){
+            setLoadingMsg("Saving to shopping history...")
+            setScreenState(State.ScreenState.showLoading);
+            let products = await _convertProductsList();
+            await _saveToHistoryAsync(products);
+            _showToast("Products saved to history")
+        }
         navigation.navigate('Home');
+    }
+
+    const _convertProductsList = async () =>
+    {
+        let products = [];
+        for(var i in scannedList){
+            products.push({
+                name: scannedList[i].name,
+                shop: scannedList[i].shop,
+                price: scannedList[i].price,
+                discount: scannedList[i].discount,
+                pricePerQuantity: scannedList[i].pricePerQuantity
+            })
+        }
+        return products;
+    }
+
+    const _saveToHistoryAsync = async (products) =>
+    {
+        try {
+            let response = await fetch(
+                config.API_URL + 'receipt', {
+              method: 'POST',
+              headers: {
+                  Accept: "application/json",
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + user.token
+              },
+              body: JSON.stringify({products})
+              }
+            );
+            console.log("--------------")
+            console.log(response)
+            return response;
+          } catch (error) {
+            console.error('ERROR:' + error);
+          }
     }
 
     const _onListConfirmPress = async () =>
@@ -286,24 +331,15 @@ const ScanScreen = ({ navigation }) => {
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
                         <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
                         <Text style={{color:'green'}}> {loadingMsg} </Text>
-                    </View>           
-                    {
-                        uri
-                    && (
-                        <ExpoImageManipulator
-                            photo={{ uri }}
-                            isVisible={true}
-                            onPictureChoosed={(data) => _readImage(data)}
-                            onToggleModal={() => {}}
-                            saveOptions={{
-                                compress: 1,
-                                format: 'jpeg',
-                                base64: true,
-                            }}
-                            
-                        />
-                    )
-                    }
+                    </View>    
+                    <ImageManipulator
+                        photo={{ uri }}
+                        isVisible={true}
+                        onPictureChoosed={({ uri: uriM }) => _readImage(uriM)}
+                        onToggleModal={() => {}}
+                    />       
+                    
+                    
                 </View>
             )
                 
