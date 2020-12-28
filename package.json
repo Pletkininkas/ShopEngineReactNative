@@ -29,6 +29,7 @@
     "react-native-chart-kit": "^6.8.1",
     "react-native-expo-fancy-alerts": "^2.1.0",
     "react-native-expo-image-cropper": "^1.0.2",
+    "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "~1.7.0",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-loading-spinner-overlay": "^2.0.0",

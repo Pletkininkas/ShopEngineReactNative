@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Button, View, Text, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase } from 'react-native';
-import { useTheme } from '@react-navigation/native';
+import React, { useState, useEffect, useContext } from 'react';
+import { Button, View, Text, Image, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase } from 'react-native';
+import { useLinkProps, useTheme } from '@react-navigation/native';
 
 import styles from '../../config/styles';
 import screenStyles from './styles.js'
@@ -10,8 +10,9 @@ import config from '../../config';
 import { TextInput } from 'react-native-paper';
 import { debug, max, min } from 'react-native-reanimated';
 import { ThemeColors } from 'react-navigation';
+import {ShoppingListContext} from '../../components/context'
 
-const NewListScreen = ({ navigation }) => {
+const NewListScreen = ({navigation, selectedList}) => {
 
   const [screenState, setScreenState] = useState(State.ScreenState.viewingList)
   const [products, setProducts] = useState([]);
@@ -25,13 +26,18 @@ const NewListScreen = ({ navigation }) => {
   const [onlyReplaceUnspecifiedShops, setOnlyReplaceUnspecifiedShops] = useState(false);
   const [chosenShops, setChosenShops] = useState([]);
   const [listShops, setListShops] = useState([]);
+  const [listName, setListName] = useState("New Shopping List");
 
   const theme = useTheme();
+  const textColor = theme.dark ? '#fff' : '#000';
+  const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
+  const listsContext = useContext(ShoppingListContext);
 
   useState(() => {fetchProducts().then(data => {setProducts(data); setDisplayedProducts(data)})}, []);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
+      listsContext.setCurrentList(null);
       setShoppingList([]);
       setSelectedAmount(1);
       setSelectedItem(null);
@@ -41,6 +47,7 @@ const NewListScreen = ({ navigation }) => {
       setListShops([]);
       setScreenState(viewingList);
       setDisplayedProducts(products);
+      _searchProducts("");
     });
     return unsubscribe;
   }, [navigation]);
@@ -60,6 +67,22 @@ const NewListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
+  useEffect(() => {
+    editList();
+  }, [listsContext.currentList]);
+
+  const editList = () => {
+    console.log(listsContext.currentList);
+    if(listsContext.currentList != undefined && listsContext.currentList != null){
+      setShoppingList(listsContext.currentList.items);
+      setListName(listsContext.currentList.name);
+    }else{
+      setShoppingList([]);
+      setListName("New Shopping List");
+    }
+    
+  }
+
   async function fetchProducts(){
     var products = []
     try{
@@ -73,7 +96,7 @@ const NewListScreen = ({ navigation }) => {
         var data = await response;
         products = await data.json();
     }catch(err){
-        console.log(err);
+        console.error(err);
     }
     return products.data;
   }
@@ -222,6 +245,7 @@ const NewListScreen = ({ navigation }) => {
     setShoppingList(optimizedList);
     setScreenState(viewingList);
     setOptimizedList([]);
+    _searchProducts("");
   }
 
   const _changeAmount = (text) => {
@@ -238,6 +262,22 @@ const NewListScreen = ({ navigation }) => {
     setChosenShops(newChosen);
   }
 
+  const _saveList = () => {
+    
+    var oldLists = [...listsContext.shoppingLists];
+    var foundList = oldLists.find(x => x.name == listName);
+    if(foundList == undefined){
+      var newList = { name: listName, items: shoppingList };
+      oldLists.push(newList);
+    }else{
+      foundList.items = shoppingList;
+    }
+
+    listsContext.setShoppingLists(oldLists);
+    listsContext.saveLists(oldLists);
+    navigation.navigate('Home');
+  }
+
   const _getOptimizedList = async () =>{
     try{
       var items = []
@@ -248,8 +288,6 @@ const NewListScreen = ({ navigation }) => {
       }
 
       var content = { shoppingList: items, allowedShops: chosenShops, onlyReplaceUnspecifiedShops: onlyReplaceUnspecifiedShops};
-
-      console.log(content);
 
       let response = await fetch(
         config.API_URL + 'optimize', {
@@ -284,21 +322,35 @@ const NewListScreen = ({ navigation }) => {
       return (
         <View style={styles().containerm}>
           <View style={styles().body}>
+            <View style={{flexDirection: 'row', justifyContent: "center", padding: 10}}>
+              <TextInput
+                  style={{height: 70}}
+                  placeholder="Name"
+                  defaultValue={listName}
+                  onChangeText={text => setListName(text)}/>
+              <View style={{flex: 0.5}}/>
+              <TouchableOpacity 
+                  style={shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
+                  onPress={() => _saveList()}
+                  disabled={shoppingList.length > 0 ? false : true}>
+                  <Text style={{color: textColor}}>Save List</Text>
+              </TouchableOpacity>
+            </View>
             <View alignItems="center">
               <TouchableOpacity 
                 style={[screenStyles.button, {marginBottom: 0}]} 
                 onPress={() => _selectItem()}>
-                <Text style={{color: theme.dark ? '#fff' : '#000'}}>Add Item</Text>
+                <Text style={{color: textColor}}>Add Item</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
                 disabled={shoppingList.length > 0 ? false : true} 
                 onPress={() => _configureOptimization()}>
-                <Text style={shoppingList.length > 0 ? {color: theme.dark ? '#fff' : '#000'} : screenStyles.disabledText}>Find Cheaper List</Text>
+                <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Find Cheaper List</Text>
               </TouchableOpacity>
-              <Text style={{marginBottom: 20, color: theme.dark ? '#fff' : '#000'}}>Estimated Price: {displayPrice(calculatePriceRange(shoppingList))}</Text>
+              <Text style={{marginBottom: 20, color: textColor}}>Estimated Price: {displayPrice(calculatePriceRange(shoppingList))}</Text>
             </View>
-            <SafeAreaView style={{color:"#ccc", marginBottom: 180}}>
+            <SafeAreaView style={{color:"#ccc", marginBottom: 270}}>
                 <FlatList
                   decelerationRate='normal'
                   showsVerticalScrollIndicator={false}
@@ -306,20 +358,20 @@ const NewListScreen = ({ navigation }) => {
                   renderItem={({item}) => (
                     <TouchableOpacity 
                       onPress={() => {}} 
-                      style={[screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]}>
+                      style={[screenStyles.item, {backgroundColor: itemColor}]}>
                       <View style={screenStyles.divider}>
                         <View style={screenStyles.leftText}>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.name}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.unit}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>x{item.amount}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.shop}</Text>
+                          <Text style={{color: textColor}}>{item.name}</Text>
+                          <Text style={{color: textColor}}>{item.unit}</Text>
+                          <Text style={{color: textColor}}>x{item.amount}</Text>
+                          <Text style={{color: textColor}}>{item.shop}</Text>
                         </View>
                       </View>
                       <View alignItems="center">
                         <TouchableOpacity 
                           style={screenStyles.button} 
                           onPress={() => _removeItemFromShoppingList(item)}>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>Remove</Text>
+                          <Text style={{color: textColor}}>Remove</Text>
                         </TouchableOpacity>
                       </View>
                     </TouchableOpacity>)}
@@ -344,18 +396,18 @@ const NewListScreen = ({ navigation }) => {
                   renderItem={({item}) => (
                     <TouchableOpacity 
                       onPress={() => {}} 
-                      style={[screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]}>
+                      style={[screenStyles.item, {backgroundColor: itemColor}]}>
                       <View style={screenStyles.divider}>
                         <View style={screenStyles.leftText}>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.name}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.unit}</Text>
+                          <Text style={{color: textColor}}>{item.name}</Text>
+                          <Text style={{color: textColor}}>{item.unit}</Text>
                         </View>
                       </View>
                       <View alignItems="center">
                         <TouchableOpacity 
                           style={screenStyles.button} 
                           onPress={() => _configureItem(item)}>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>Select</Text>
+                          <Text style={{color: textColor}}>Select</Text>
                         </TouchableOpacity>
                       </View>
                     </TouchableOpacity>)}
@@ -370,7 +422,7 @@ const NewListScreen = ({ navigation }) => {
         <View style={styles().containerm}>
           <View style={styles().body}>
             <View alignItems="center">
-              <Text style={[screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}, {color: theme.dark ? '#fff' : '#000'}]}>{selectedItem.name}</Text>
+              <Text style={[screenStyles.item, {backgroundColor: itemColor}, {color: textColor}]}>{selectedItem.name}</Text>
             </View>
             <TextInput 
               style={{marginLeft: "30%", marginRight: "30%"}} 
@@ -381,7 +433,7 @@ const NewListScreen = ({ navigation }) => {
             <View alignItems="center">
               <TouchableOpacity style={screenStyles.button} 
                 onPress={() => _addItemToShoppingList(selectedItem)}>
-                <Text style={{color: theme.dark ? '#fff' : '#000'}}>Add Item</Text>
+                <Text style={{color: textColor}}>Add Item</Text>
               </TouchableOpacity>
             </View>
             <SafeAreaView style={{color:"#ccc", marginBottom: 200}}>
@@ -392,11 +444,11 @@ const NewListScreen = ({ navigation }) => {
                 renderItem={({item}) => (
                   <TouchableOpacity 
                     onPress={() => setSelectedShop(item.shop)} 
-                    style={item.shop === selectedShop ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]}>
+                    style={item.shop === selectedShop ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: itemColor}]}>
                     <View style={screenStyles.divider}>
                       <View style={screenStyles.leftText}>
-                        <Text style={{color: theme.dark ? '#fff' : '#000'}}>Shop: {item.shop}</Text>
-                        <Text style={{color: theme.dark ? '#fff' : '#000'}}>Price: {item.price}</Text>
+                        <Text style={{color: textColor}}>Shop: {item.shop}</Text>
+                        <Text style={{color: textColor}}>Price: {item.price}</Text>
                       </View>
                     </View>
                   </TouchableOpacity>)}
@@ -415,16 +467,16 @@ const NewListScreen = ({ navigation }) => {
                 style={chosenShops.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
                 disabled={chosenShops.length > 0 ? false : true} 
                 onPress={() => _optimizeList()}>
-                <Text style={chosenShops.length > 0 ? {color: theme.dark ? '#fff' : '#000'} : screenStyles.disabledText}>Generate Cheaper List</Text>
+                <Text style={chosenShops.length > 0 ? {color: textColor} : screenStyles.disabledText}>Generate Cheaper List</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={onlyReplaceUnspecifiedShops ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]} 
+                style={onlyReplaceUnspecifiedShops ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: itemColor}]} 
                 onPress={() => _checkSpecifiedShops()}>
                 <View style={screenStyles.leftText}>
-                  <Text style={{color: theme.dark ? '#fff' : '#000'}}>Only replace unspecified shops</Text>
+                  <Text style={{color: textColor}}>Only replace unspecified shops</Text>
                 </View>
               </TouchableOpacity>
-              <Text style={{color: theme.dark ? '#fff' : '#000'}}>Select shops you can visit:</Text>
+              <Text style={{color: textColor}}>Select shops you can visit:</Text>
             </View>
             <SafeAreaView>
               <FlatList
@@ -434,10 +486,10 @@ const NewListScreen = ({ navigation }) => {
                 renderItem={({item}) => (
                   <TouchableOpacity 
                     onPress={() => _chooseShop(item)} 
-                    style={chosenShops.find(x => x == item) ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]}>
+                    style={chosenShops.find(x => x == item) ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: itemColor}]}>
                     <View style={screenStyles.divider}>
                       <View style={screenStyles.leftText}>
-                        <Text style={{color: theme.dark ? '#fff' : '#000'}}>Shop: {item}</Text>
+                        <Text style={{color: textColor}}>Shop: {item}</Text>
                       </View>
                     </View>
                   </TouchableOpacity>)}
@@ -457,11 +509,11 @@ const NewListScreen = ({ navigation }) => {
                   style={screenStyles.button} 
                   onPress={() => _replaceShoppingList()}>
                   <View style={screenStyles.leftText}>
-                    <Text style={{color: theme.dark ? '#fff' : '#000'}}>Replace</Text>
+                    <Text style={{color: textColor}}>Replace</Text>
                   </View>
                 </TouchableOpacity>
-                <Text style={{margin:10, color: theme.dark ? '#fff' : '#000'}}>Estimated Price: {displayPrice(calculatePriceRange(optimizedList))}</Text>
-                <Text style={{margin:10, color: theme.dark ? '#fff' : '#000'}}>This list will save you: {displayPrice(comaparePriceRanges(shoppingList, optimizedList))}</Text>
+                <Text style={{margin:10, color: textColor}}>Estimated Price: {displayPrice(calculatePriceRange(optimizedList))}</Text>
+                <Text style={{margin:10, color: textColor}}>This list will save you: {displayPrice(comaparePriceRanges(shoppingList, optimizedList))}</Text>
               </View>
               <SafeAreaView>
                 <FlatList
@@ -471,13 +523,13 @@ const NewListScreen = ({ navigation }) => {
                   renderItem={({item}) => (
                     <TouchableOpacity 
                       onPress={() => {}} 
-                      style={[screenStyles.item, {backgroundColor: theme.dark ? '#3d3d3d' : '#f2fcf6'}]}>
+                      style={[screenStyles.item, {backgroundColor: itemColor}]}>
                       <View style={screenStyles.divider}>
                         <View style={screenStyles.leftText}>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.name}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.shop}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{item.amount}</Text>
-                          <Text style={{color: theme.dark ? '#fff' : '#000'}}>{(item.pricePerUnit * item.amount).toFixed(2)}</Text>
+                          <Text style={{color: textColor}}>{item.name}</Text>
+                          <Text style={{color: textColor}}>{item.shop}</Text>
+                          <Text style={{color: textColor}}>{item.amount}</Text>
+                          <Text style={{color: textColor}}>{(item.pricePerUnit * item.amount).toFixed(2)}</Text>
                         </View>
                       </View>
                     </TouchableOpacity>)}
@@ -492,14 +544,14 @@ const NewListScreen = ({ navigation }) => {
           <View style={styles().containerm}>
             <View style={styles().body}>
               <View alignItems="center" style={{height: '100%', justifyContent: "center"}}>
-                <Text style={{fontSize: 32, color: theme.dark ? '#fff' : '#000'}}>Loading...</Text>
+                <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
+                <Text style={{color:'green'}}> Loading... </Text>
               </View>
             </View>
           </View>
         );
       }
     default:
-      console.log("nothing");
       return null;
   }
 }
