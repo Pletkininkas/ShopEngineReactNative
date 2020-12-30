@@ -166,7 +166,7 @@ const ProfileScreen = () =>  {
                         placeholderTextColor= '#C7C7CD'
                         style={[styles.textInput, {color: theme.dark ? themeColors.white : themeColors.dark}]}
                         autoCapitalize="none"
-                        onChangeText={(props)=> {setData({password: props}), console.log('naujas: '+props)}}
+                        onChangeText={(props)=> {setData({password: props})}}
                     />
                     {data.check_textInputChange ?
                     <Animatable.View
@@ -243,7 +243,6 @@ const ProfileScreen = () =>  {
         ],
         { cancelable: false }
       );
-      console.log(err);
     });
 
     if (response.success) {
@@ -282,9 +281,8 @@ const ProfileScreen = () =>  {
       })
       .then((resp) => {return resp.json()})
       .catch(err => {
-       console.log(err);
+        console.log(err);
       });
-      console.log(response.success);
       if (response.success) {
         if (Platform.OS === 'android') {
           ToastAndroid.show('Password has been changed!', ToastAndroid.SHORT)
