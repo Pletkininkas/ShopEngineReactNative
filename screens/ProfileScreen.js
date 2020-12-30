@@ -21,7 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { AuthContext } from '../components/context';
 
-import config, { defaultImages, user } from '../config';
+import config, { defaultImages, updateDrawer, user } from '../config';
 
 const ProfileScreen = () =>  {
   const theme = useTheme();
@@ -95,6 +95,7 @@ const ProfileScreen = () =>  {
         setNotSelectedInformationText(json.message);
         if (json.success) {
           user.profileImage = uploadImageUri;
+          updateDrawer(true);
           if (Platform.OS === 'android') {
             ToastAndroid.show('Image has been uploaded!', ToastAndroid.SHORT)
           } else {

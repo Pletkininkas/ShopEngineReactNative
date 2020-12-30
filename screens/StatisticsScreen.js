@@ -12,7 +12,7 @@ const StatisticsScreen = ({navigation}) => {
 
     const {colors} = useTheme();
     const [months, setMonths] = React.useState(['']);
-    const [receipts, setReceipts] = React.useState([]);
+    const [receipts, setReceipts] = React.useState(user.receipt);
     const [tooltipPos,setTooltipPos] = useState(
       { x:0, y:0, visible:false, value:0 });
     var numOfShoppings = [0, 0];
@@ -24,7 +24,7 @@ const StatisticsScreen = ({navigation}) => {
     graphData.length = 12; 
     var savedMoneyData1 = [];
     savedMoneyData1.length = 12;
-    var savedMoneyData2 = 0;  
+    const [savedMoneyData2, setSavedMoneyData2] = React.useState(user.receiptTotalSaved);  
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
@@ -86,7 +86,6 @@ const StatisticsScreen = ({navigation}) => {
             if(i==10||i==11){
               savedMoneyData1[i-10]+=(product.discount*(-1));
             }
-            savedMoneyData2+=(product.discount*(-1));
           });
 
           totalNumOfShoppings++;
@@ -164,7 +163,6 @@ const StatisticsScreen = ({navigation}) => {
     var average = calculateAverage(total, totalNumOfShoppings)
     avgList.fill(average);
 
-    savedMoneyData2 = Math.round(savedMoneyData2*100)/100;
     var savedList = [];
     savedList.length =12;
     savedList.fill(savedMoneyData2);
@@ -193,7 +191,7 @@ const StatisticsScreen = ({navigation}) => {
                       color: () => configColors.green                      
                   }
                 ],
-                legend: [`Year average (${average}€)`, "Total spendings"]
+                legend: [`Year average (${average.toFixed(2)}€)`, "Total spendings"]
                 }}
                 width={Dimensions.get("window").width - 20}
                 height={220}
@@ -263,7 +261,7 @@ const StatisticsScreen = ({navigation}) => {
                       color: () => configColors.green                      
                   }
                 ],
-                legend: [`You've saved (${savedMoneyData2}€)`, "Total spendings"]
+                legend: [`You've saved (${savedMoneyData2.toFixed(2)}€)`, "Total spendings"]
                 }}
                 width={Dimensions.get("window").width - 20}
                 height={220}

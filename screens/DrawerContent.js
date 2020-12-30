@@ -64,7 +64,7 @@ export function DrawerContent(props) {
         _setProfileImageStorage();
         _updateDrawerReceiptHistory();
         fetchUserProfileImage();
-    }, [encodedBase64]);
+    }, [user.profileImage]);
 
     useEffect(() => {
         fetchUserData();
