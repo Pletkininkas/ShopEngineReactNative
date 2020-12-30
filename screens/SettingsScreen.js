@@ -33,10 +33,8 @@ const SettingsScreen = ({ navigation }) => {
   const theme = useTheme();
 
   const [username, setUsername] = useState(user.username);
-  const [allowPushNotifications, setAllowPushNotifications] = useState(false);
-  const [automaticallySaveReceipts, setAutomaticallySaveReceipts] = useState(
-    false
-  );
+  const [allowPushNotifications, setAllowPushNotifications] = useState(user.allowPushNotifications);
+  const [automaticallySaveReceipts, setAutomaticallySaveReceipts] = useState(user.automaticallySaveReceipts);
   const [language, setLanguage] = useState("English");
   const [renderAbout, setRenderAbout] = useState(false);
   const [renderReport, setRenderReport] = useState(false);
@@ -158,6 +156,7 @@ const SettingsScreen = ({ navigation }) => {
           <View style={[lstyles.textAreaContainer, {width:'95%'}]}>
             <TextInput multiline={true} 
             placeholder="Type here"
+            placeholderTextColor= {theme.dark ? colors.white : colors.dark}
             numberOfLines={16}
             onChangeText={(props)=> {setReportText(props)}}
             style={{backgroundColor: theme.dark ? theme.colors.background: colors.white, textAlignVertical:'top', color: theme.dark ? colors.white : colors.dark}}
@@ -310,7 +309,7 @@ const SettingsScreen = ({ navigation }) => {
                     setAutomaticallySaveReceipts(value);
                     setUserPrefs(language, allowPushNotifications, value);
                   }}
-                  value={automaticallySaveReceipts}
+                  value={user.automaticallySaveReceipts}
                   trackColor={{
                     true: colors.switchEnabled,
                     false: colors.switchDisabled,

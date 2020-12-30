@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, View, Text, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase, ActivityIndicator, Alert, Image, TouchableHighlightComponent } from 'react-native';
+import { Button, View, Text, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase, ActivityIndicator, Alert, Image, TouchableHighlightComponent, ToastAndroid } from 'react-native';
 import { color } from 'react-native-reanimated';
 import { MenuProvider, Menu, MenuTrigger, MenuOptions, MenuOption} from 'react-native-popup-menu';
 import { Header } from 'react-navigation';
@@ -8,16 +8,18 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { TouchableNativeFeedback } from 'react-native-gesture-handler';
 import { useTheme } from "@react-navigation/native";
 import styles from '../config/styles';
+import {SwipeListView} from 'react-native-swipe-list-view'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import Modal from 'react-native-modal';
 import config, { user, setReceiptsHistory, updateDrawer, drawer } from '../config';
 
 const ShoppingHistoryScreen = () => {
-    const [screenLoading, setScreenLoading] = React.useState(true);
+    const [screenLoading, setScreenLoading] = React.useState(false);
     const [itemSelected, setItemSelected] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState({});
-    const [refreshReceipts, setRefreshReceipts] = React.useState(true);
-    const [receipts, setReceipts] = React.useState([]);
+    const [receipts, setReceipts] = React.useState(user.receipt);
+    const drawerUpdate = React.useState(drawer.update);
     const theme = useTheme();
 
     const displayReceipt = (item) => {
@@ -26,8 +28,7 @@ const ShoppingHistoryScreen = () => {
     }
 
     const fetchUserReceipts = () => {
-      setReceipts(user.receipt);
-           let token = user.token;
+          let token = user.token;
           fetch(config.API_URL+'receipt', {
             method: 'GET',
             headers: {
@@ -56,11 +57,12 @@ const ShoppingHistoryScreen = () => {
         },10000);
           
         return()=>clearInterval(interval);
-    }, [refreshReceipts]);
+    }, []);
 
     const renderShoppingHistory = () => {
       return (
-        <FlatList
+        <SwipeListView
+          disableRightSwipe
           decelerationRate='normal'
           showsVerticalScrollIndicator={false}
           data={receipts}
@@ -77,11 +79,6 @@ const ShoppingHistoryScreen = () => {
                   </View>
                 </View>
               </View>
-              <View style={styles.rightButton}>
-                <TouchableHighlight activeOpacity={0.6} underlayColor="#9e9e9e" onPress={() => {deleteReceiptPopUp(item.id)}}>
-                  <Text style={{fontSize: 24, paddingHorizontal: 20, color: '#8b0000'}}>X</Text>
-                </TouchableHighlight>
-              </View>
             </View>
             <View alignItems="center">
               <TouchableOpacity style={{
@@ -92,12 +89,22 @@ const ShoppingHistoryScreen = () => {
                 marginTop: 10,
                 backgroundColor: "#1db954",
                 borderRadius: 10,
-              }} onPress={() => displayReceipt(item)}>
+              }} onPress={() => {displayReceipt(item)}}>
                 <Text style={{color: theme.dark ? colors.white : colors.dark}}>Show more</Text>
               </TouchableOpacity>
             </View>
             </View>)}
             keyExtractor={item => item.id.toString()}
+            renderHiddenItem={ ({item}) => (
+              <View style={[contentStyles.deleteItem, {backgroundColor:'indianred'}]}>
+                <TouchableOpacity 
+                  style={contentStyles.backRightBtn} 
+                  onPress={() => deleteReceiptPopUp(item.id)}>
+                  <Ionicons name='ios-trash' size={40}/>
+                </TouchableOpacity>
+              </View>
+            )}
+            rightOpenValue={-75}
         />
       );
     }
@@ -180,7 +187,11 @@ const ShoppingHistoryScreen = () => {
     }
 
     const deleteReceipt = async (id) => {
-      setScreenLoading(true);
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Deleting receipt', ToastAndroid.SHORT)
+      } else {
+          Alert.alert('Deleting receipt');
+      }
       let token = user.token;
       fetch(config.API_URL+'receipt/'+id.toString(), {
         method: 'DELETE',
@@ -190,12 +201,20 @@ const ShoppingHistoryScreen = () => {
           'Authorization': 'Bearer ' + token
         }
       }).then((res) => {
-          const dataRemoved = receipts.filter((r) => {
-            return r.id !== 211
+          const dataWithoutRemoved = receipts.filter((r) => {
+            return r.id !== id
           });
-          setReceipts(dataRemoved);
-          setRefreshReceipts(true);
-          setScreenLoading(false);
+          if (dataWithoutRemoved.lenght == 0) {
+            user.receiptTotalSaved = 0.00;
+          }
+          user.receiptCount = user.receiptCount-1;
+          user.receipt = dataWithoutRemoved;
+          setReceipts(dataWithoutRemoved);
+          if (Platform.OS === 'android') {
+            ToastAndroid.show('Receipt has been deleted!', ToastAndroid.SHORT)
+          } else {
+              Alert.alert('Receipt has been deleted!');
+          }
         })
         .catch(err => {
           console.log(err);
@@ -258,6 +277,21 @@ const colors = {
 };
 
 const contentStyles = StyleSheet.create({
+  backRightBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 'auto',
+    width: '10%',
+    marginTop: 25
+  },
+  deleteItem: {
+    backgroundColor: "#f2fcf6",
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    margin: 10,
+    height: '85%'
+  },
   item: {
     elevation: 5,
     backgroundColor: "#f2fcf6",

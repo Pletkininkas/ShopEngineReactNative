@@ -10,7 +10,8 @@ import {
   TextInput,
   Keyboard,
   Alert,
-  ImageBackground
+  ImageBackground,
+  ToastAndroid
 } from 'react-native'
 import * as Animatable from 'react-native-animatable';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -93,7 +94,16 @@ const ProfileScreen = () =>  {
         );
         let json = await response.json();
         setNotSelectedInformationText(json.message);
-        setNotSelected(true);
+        if (json.success) {
+          user.profileImage = uploadImageUri;
+          if (Platform.OS === 'android') {
+            ToastAndroid.show('Image has been uploaded!', ToastAndroid.SHORT)
+          } else {
+              Alert.alert('Image has been uploaded!');
+          }
+        }
+        setOptionSelected(false);
+        setNotSelected(false);
         setUploadImageUri('');
       } catch (error) {
         console.error('ERROR:' + error);
@@ -170,34 +180,8 @@ const ProfileScreen = () =>  {
                     </Animatable.View>
                     : null }
                 </View>
-                <View style={styles.action}>
-                    <FontAwesome
-                        name="lock"
-                        colors='#05375a'
-                        size={20}
-                        style={{marginTop: 12}}
-                    />
-                    <TextInput
-                        placeholder="Re-New Password"
-                        placeholderTextColor= '#C7C7CD'
-                        style={[styles.textInput, {color: theme.dark ? themeColors.white : themeColors.dark}]}
-                        autoCapitalize="none"
-                        onChangeText={()=> {}}
-                    />
-                    {data.check_textInputChange ?
-                    <Animatable.View
-                        animation="bounceIn"
-                    >
-                    <Feather
-                        name="check-circle"
-                        color="green"
-                        size={20}
-                    />
-                    </Animatable.View>
-                    : null }
-                </View>
           <View style={styles.modalBodyContent}>
-            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {ChangePassword(), Keyboard.dismiss(), setOptionSelected(false)}}>
+            <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {ChangePassword(), Keyboard.dismiss()}}>
               <Text style={{color: textColor}}>Confirm</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalButtonContainer} onPress={() => {setOptionSelected(false), Keyboard.dismiss()}}>
@@ -236,12 +220,12 @@ const ProfileScreen = () =>  {
     }
   }
 
-  const DeleteUser = () => {
+  const DeleteUser = async () => {
     let token = user.token;
     var bodyData = {
       "UserUpdateType": "Deactivate"
     }
-    fetch(config.API_URL+'user', {
+    let response = await fetch(config.API_URL+'user', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -249,39 +233,45 @@ const ProfileScreen = () =>  {
         'Authorization': 'Bearer ' + token
       },
       body: JSON.stringify(bodyData)
-    }).then(data => {
-      console.log(data);
-        Alert.alert(
-          'Deactivate account - Success',
-          data.message,
-          [
-          { text: 'Okey', onPress: () => {signOut()} }
-          ],
-          { cancelable: false }
-        );
-        return;
-      })
-      .catch(err => {
-        Alert.alert(
-          'Deactivate account - Error',
-          'Could not deactivate account! Please try again shortly.',
-          [
-          { text: 'Okey', onPress: () => {signOut()} }
-          ],
-          { cancelable: false }
-        );
-        console.log(err);
-      });
+    }).then(data => {return data.json()})
+    .catch(err => {
+      Alert.alert(
+        'Deactivate account - Error',
+        'Could not deactivate account! Please try again shortly.',
+        [
+        { text: 'Okey', onPress: () => {signOut()} }
+        ],
+        { cancelable: false }
+      );
+      console.log(err);
+    });
+
+    if (response.success) {
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Account has been deleted!', ToastAndroid.SHORT)
+      } else {
+          Alert.alert('Account has been deleted!');
+      }
+      signOut();
+    } else {
+      if (Platform.OS === 'android') {
+        ToastAndroid.show('Account could not be deleted!', ToastAndroid.SHORT)
+      } else {
+          Alert.alert('Account could not be deleted!');
+      }
+    }
+    setOptionSelected(false);
+    setNotSelected(false);
   }
 
-  const ChangePassword = () => {
+  const ChangePassword = async () => {
     let token = user.token;
     var bodyData = {
       "Password": data.password,
       "UserUpdateType": "Password"
     }
     if (data.password.length >= 8 && /(?=.*[0-9])/.test(data.password)) {
-      fetch(config.API_URL+'user', {
+      let response = await fetch(config.API_URL+'user', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -289,22 +279,27 @@ const ProfileScreen = () =>  {
           'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(bodyData)
-      }).then(data => {
-        console.log(data);
-          Alert.alert(
-            'Password change - Success',
-            data.message,
-            [
-            { text: 'Okey', onPress: () => {} }
-            ],
-            { cancelable: false }
-          );
-          setData({password: ''});
-          return;
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      })
+      .then((resp) => {return resp.json()})
+      .catch(err => {
+       console.log(err);
+      });
+      console.log(response.success);
+      if (response.success) {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Password has been changed!', ToastAndroid.SHORT)
+        } else {
+            Alert.alert('Password has been changed!');
+        }
+      } else {
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Password could not be changed!', ToastAndroid.SHORT)
+        } else {
+            Alert.alert('Password could not be changed!');
+        }
+      }
+      setOptionSelected(false);
+      setNotSelected(false);
     } else {
       Alert.alert(
         'Password change - Error',

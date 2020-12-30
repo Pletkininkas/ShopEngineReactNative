@@ -34,7 +34,7 @@ const SplashScreen = ({ navigation }) => {
                 <Animatable.Image
                 animation="bounceIn"
                 duration={2500}
-                source={require('../assets/stadia.png')}
+                source={require('../assets/icon.png')}
                 style={styles.logo}
                 resizeMode="stretch"
                 />

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker} from 'react-native';
+import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker, Alert} from 'react-native';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-p
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
-import config, {user} from '../../config'
+import config, {drawer, updateDrawer, user} from '../../config'
 import styles from './styles.js'
 import State from './state.js'
 import { ImageManipulator } from 'expo-image-crop'
@@ -114,6 +114,7 @@ const ScanScreen = ({ navigation }) => {
         } else {
             Alert.alert(message);
         }
+        updateDrawer(true);
     }
 
     const _readImage = async (pUri) =>{
@@ -160,14 +161,37 @@ const ScanScreen = ({ navigation }) => {
 
     const _onCompareListConfirm = async () =>
     {
+        console.log(user.automaticallySaveReceipts);
         if(user.automaticallySaveReceipts){
-            setLoadingMsg("Saving to shopping history...")
-            setScreenState(State.ScreenState.showLoading);
-            let products = await _convertProductsList();
-            await _saveToHistoryAsync(products);
-            _showToast("Products saved to history")
+            _showToast("Saving receipt");
+            _manualSave();
+        } else {
+            Alert.alert(
+                'Receipt save',
+                'Save current receipt?',
+                [
+                    {
+                      text: "Yes",
+                      onPress: () => {
+                        _manualSave();
+                      }
+                    },
+                    {
+                      text: "No",
+                      onPress: () => {}
+                    }
+                  ], {cancelable: true}
+            );
         }
         navigation.navigate('Home');
+    }
+
+    const _manualSave = async () => {
+        setLoadingMsg("Saving to shopping history...")
+        setScreenState(State.ScreenState.showLoading);
+        let products = await _convertProductsList();
+        await _saveToHistoryAsync(products);
+        _showToast("Receipt has been saved")
     }
 
     const _convertProductsList = async () =>
@@ -199,8 +223,8 @@ const ScanScreen = ({ navigation }) => {
               body: JSON.stringify({products})
               }
             );
-            console.log("--------------")
-            console.log(response)
+            //console.log("--------------")
+            //console.log(response)
             return response;
           } catch (error) {
             console.error('ERROR:' + error);
@@ -247,8 +271,8 @@ const ScanScreen = ({ navigation }) => {
               }
             );
             let json = await response.json();
-            console.log("--------------")
-            console.log(json)
+            //console.log("--------------")
+            //console.log(json)
             return json;
           } catch (error) {
             console.error('ERROR:' + error);
@@ -278,7 +302,7 @@ const ScanScreen = ({ navigation }) => {
             }
           );
           let json = await response.json();
-          console.log(json)
+          //console.log(json)
           return json;
         } catch (error) {
           console.error('ERROR:' + error);
