@@ -29,7 +29,7 @@ import RootStackScreen from './screens/root/RootStackScreen'
 
 import AsyncStorage from '@react-native-community/async-storage'
 
-import config, { user, setUser } from './config'
+import config, { user, setUser, defaultImages } from './config'
 
 const Drawer = createDrawerNavigator();
 
@@ -166,7 +166,7 @@ const App = () => {
             'Sign In - Error',
             'Application does not have privileges to device storage',
             [
-              { text: 'OK', onPress: () => console.log('OK Pressed (no storage privileges)') }
+              { text: 'OK', onPress: () => {}}
             ],
             { cancelable: true }
           );
@@ -179,7 +179,7 @@ const App = () => {
           'Sign In',
           errorMessage,
           [
-            { text: 'OK', onPress: () => console.log('OK Pressed') }
+            { text: 'OK', onPress: () => {}}
           ],
           { cancelable: true }
         );
@@ -276,6 +276,12 @@ const App = () => {
         let automaticSaveReceipt = await AsyncStorage.getItem('optionAutomaticReceiptSave');
         let pushNotifications = await AsyncStorage.getItem('optionAllowPushNotifications');
         let themeStorage = await AsyncStorage.getItem('darkTheme');
+        let receivedImage = await AsyncStorage.getItem('profileImage');
+        if (receivedImage != null) {
+            user.profileImage = receivedImage;
+        } else {
+            user.profileImage = defaultImages.profileImage;
+        }
         if (themeStorage == 'true')
             setIsDarkTheme(isDarkTheme => !isDarkTheme);
         if (automaticSaveReceipt != null) {

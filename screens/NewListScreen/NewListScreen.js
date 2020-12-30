@@ -63,7 +63,7 @@ const NewListScreen = ({navigation}) => {
   }, [listsContext.currentList]);
 
   const editList = () => {
-    console.log(listsContext.currentList);
+    //console.log(listsContext.currentList);
     if(listsContext.currentList != undefined && listsContext.currentList != null){
       setShoppingList(listsContext.currentList.items);
       setListName(listsContext.currentList.name);

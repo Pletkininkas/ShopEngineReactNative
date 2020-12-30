@@ -214,8 +214,6 @@ const ScanScreen = ({ navigation }) => {
               body: JSON.stringify({products})
               }
             );
-            //console.log("--------------")
-            //console.log(response)
             return response;
           } catch (error) {
             console.error('ERROR:' + error);
@@ -262,8 +260,6 @@ const ScanScreen = ({ navigation }) => {
               }
             );
             let json = await response.json();
-            //console.log("--------------")
-            //console.log(json)
             return json;
           } catch (error) {
             console.error('ERROR:' + error);
@@ -293,7 +289,6 @@ const ScanScreen = ({ navigation }) => {
             }
           );
           let json = await response.json();
-          //console.log(json)
           return json;
         } catch (error) {
           console.error('ERROR:' + error);

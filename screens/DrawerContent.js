@@ -44,29 +44,28 @@ export function DrawerContent(props) {
             return data.json();
             })
             .then(data => {
-            let saved = 0;
-            data.data.forEach(element => {
-                element.receiptProducts.forEach(product => {
+                let saved = 0;
+                data.data.forEach(element => {
+                    element.receiptProducts.forEach(product => {
                     saved+=(product.discount*(-1));
+                    });
                 });
-                
-            });
-            let receiptCount = Object(data.data).length;
-            setReceiptHistory(saved, receiptCount, data.data);
-            _saveReceiptHistory(saved, receiptCount, data.data);
+                let receiptCount = Object(data.data).length;
+                setReceiptHistory(saved, receiptCount, data.data);
+                _saveReceiptHistory(saved, receiptCount, data.data);
             })
             .catch(err => {
-            console.log(err);
+                console.log(err);
             });
     }
 
-    useEffect(() => {
+    React.useEffect(() => {
         _setProfileImageStorage();
         _updateDrawerReceiptHistory();
         fetchUserProfileImage();
     }, [user.profileImage]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         fetchUserData();
         
         const interval=setInterval(()=>{
@@ -164,7 +163,7 @@ export function DrawerContent(props) {
             <ImageBackground style={styles.userInfoSection} source={require('../assets/profile_bg.jpg')}>
                 <View style={{flexDirection: 'row', marginTop: 15}}>
                     <TouchableOpacity style={{width: 75, height: 75}} onPress={() => {props.navigation.navigate('Profile')}}>
-                    <Image style={{width: 75, height: 75, borderRadius: 63}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
+                    <Image style={{width: 75, height: 75, borderRadius: 63, borderWidth: 2, borderColor: "white"}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
                     </TouchableOpacity>
                     <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                         <Title style={styles.title}>{user.username}</Title>

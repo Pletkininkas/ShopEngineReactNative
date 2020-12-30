@@ -1,12 +1,12 @@
 import React, { useContext } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, ImageBackground} from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import {SwipeListView} from 'react-native-swipe-list-view'
 
-//import configColors from '../config/colors';
 import styles from '../config/styles';
 import {ShoppingListContext} from '../components/context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { user } from '../config';
 
 const HomeScreen = ({ navigation }) => {
     
@@ -27,17 +27,27 @@ const HomeScreen = ({ navigation }) => {
     }
 
     return (
-      <View style={styles().containerm}>        
-          <View style={styles().body}>
-          <View alignItems="center">
-            <TouchableOpacity 
-              style={screenStyle.button} 
-              onPress={() => {}}>
-              <Text style={{fontSize: 16, margin: 10, color: textColor}}>Shopping Lists</Text>
-            </TouchableOpacity>
+      <View style={styles().containerm}>
+        <View style={styles().body}>
+          <View style={screenStyle.root}>
+            <View style={screenStyle.body}>
+              <View style={screenStyle.headline}>
+                <ImageBackground
+                  source={require("../assets/profile_bg.jpg")}
+                  resizeMode="cover"
+                  style={screenStyle.image}
+                  imageStyle={screenStyle.image_imageStyle}
+                >
+                  <View style={screenStyle.overlay}>
+                    <Text style={[screenStyle.scienceChannel, {alignSelf: 'flex-start', marginLeft: 26}]}>Hi, {user.username}!</Text>
+                    <Text style={[screenStyle.scienceChannel, {marginTop: 50}]}>These are your shopping lists!</Text>
+                  </View>
+                </ImageBackground>
+              </View>
+            </View>
           </View>
-          <SafeAreaView style={{color:"#ccc", marginBottom: 180}}>
-            <SwipeListView style={{width:'100%', marginBottom:80}}
+          <SafeAreaView style={{color:"#ccc", marginTop: 60, flex: 2}}>
+            <SwipeListView style={{width:'100%'}}
               disableRightSwipe
               data={lists.shoppingLists}
               keyExtractor={(item) => item.name}
@@ -46,13 +56,13 @@ const HomeScreen = ({ navigation }) => {
                   style={[screenStyle.item, {backgroundColor: itemColor, alignItems: "center"}]}
                   onPress={() => selectList(item)}>
                   <Text style={{fontSize: 16, margin: 10, color: textColor}}>{item.name}</Text>
-                  
                 </TouchableOpacity>
               )}
               renderHiddenItem={ ({item}) => (
                 <View style={[screenStyle.item, {backgroundColor:'indianred'}]}>
                   <TouchableOpacity 
-                    style={screenStyle.backRightBtn} 
+                    style={screenStyle.backRightBtn}
+                    activeOpacity={1}
                     onPress={() => deleteList(item)}>
                     <Ionicons name='ios-trash' size={40}/>
                   </TouchableOpacity>
@@ -60,18 +70,53 @@ const HomeScreen = ({ navigation }) => {
               )}
               rightOpenValue={-75}
             />
-          </SafeAreaView>     
-          </View>
+          </SafeAreaView>
+        </View>
       </View>
-
     );
 };
+
+
 
 export default HomeScreen;
 
 const screenStyle = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "rgb(255,255,255)",
+    borderRadius: 10
+  },
+  body: {
+    flex: 1
+  },
+  headline: {
+    height: 246,
+    overflow: "hidden",
+    borderRadius: 10,
+    elevation: 5,
+  },
+  image: {
+    flex: 1,
+    borderRadius: 10
+  },
+  image_imageStyle: {},
+  overlay: {
+    backgroundColor: "rgba(30,26,26,0.4)",
+    flex: 1
+  },
+  scienceChannel: {
+    color: "rgba(255,255,255,1)",
+    fontSize: 24,
+    marginTop: 20,
+    alignSelf: "center"
+  },
+  text: {
+    color: "rgba(31,178,204,1)",
+    fontSize: 14,
+    alignSelf: "center"
+  },
   item: {
-    elevation: 10,
+    elevation: 5,
     backgroundColor: "#f2fcf6",
     borderRadius: 10,
     paddingVertical: 10,
@@ -89,16 +134,6 @@ const screenStyle = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 'auto',
-    width: 40
-  },
-  button:{
-    width: "40%",
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-    backgroundColor: "#1db954",
-    borderRadius: 10,
-  },
+    width: '10%'
+  }
 });
