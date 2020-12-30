@@ -1,18 +1,12 @@
-import React, { useState } from 'react';
-import { Button, View, Text, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase, ActivityIndicator, Alert, Image, TouchableHighlightComponent, ToastAndroid } from 'react-native';
-import { color } from 'react-native-reanimated';
-import { MenuProvider, Menu, MenuTrigger, MenuOptions, MenuOption} from 'react-native-popup-menu';
-import { Header } from 'react-navigation';
-import { back } from 'react-native/Libraries/Animated/src/Easing';
-import Spinner from 'react-native-loading-spinner-overlay';
-import { TouchableNativeFeedback } from 'react-native-gesture-handler';
+import React from 'react';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, ToastAndroid } from 'react-native';
 import { useTheme } from "@react-navigation/native";
 import styles from '../config/styles';
 import {SwipeListView} from 'react-native-swipe-list-view'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import Modal from 'react-native-modal';
-import config, { user, setReceiptsHistory, updateDrawer, drawer } from '../config';
+import config, { user, drawer } from '../config';
 
 const ShoppingHistoryScreen = () => {
     const [screenLoading, setScreenLoading] = React.useState(false);

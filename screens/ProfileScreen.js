@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import Modal from 'react-native-modal';
 import {
   Image,
@@ -22,7 +22,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { AuthContext } from '../components/context';
 
 import config, { defaultImages, user } from '../config';
-import colors from '../config/colors';
 
 const ProfileScreen = () =>  {
   const theme = useTheme();

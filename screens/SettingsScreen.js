@@ -1,6 +1,5 @@
 import React, {useEffect} from "react";
 import {
-  Button,
   View,
   Text,
   StyleSheet,
@@ -9,21 +8,15 @@ import {
   TextInput,
   ToastAndroid
 } from "react-native";
-import { color } from "react-native-reanimated";
-import { Header } from "react-navigation";
 import { useTheme } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import configColors from "../config/colors";
 import styles from "../config/styles";
 import {
-  SettingsDividerShort,
   SettingsDividerLong,
-  SettingsEditText,
   SettingsCategoryHeader,
   SettingsSwitch,
   SettingsPicker,
-  SettingsTextLabel,
   SettingsButton,
 } from "react-native-settings-components";
 import { useState } from "react";

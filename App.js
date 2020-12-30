@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, Alert, Keyboard, StatusBar, StyleSheet, ToastAndroid } from 'react-native';
+import { View, Alert, Keyboard, StatusBar, StyleSheet, ToastAndroid } from 'react-native';
 import { 
   NavigationContainer, 
   DefaultTheme as NavigationDefaultTheme,
@@ -23,21 +23,15 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext, apiUrl, ShoppingListContext } from './components/context';
+import { AuthContext, ShoppingListContext } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
 import AsyncStorage from '@react-native-community/async-storage'
 
-import config, { user, setUser, updateDrawer } from './config'
-import { set } from 'react-native-reanimated';
-import { SettingsDividerLong } from 'react-native-settings-components';
+import config, { user, setUser } from './config'
 
 const Drawer = createDrawerNavigator();
-
-/* function sleep(ms) {
-  return new Promise(reslove => setTimeout(reslove, ms));
-} */
 
 const App = () => {
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
@@ -83,7 +77,6 @@ const App = () => {
     try{
       let msg = await AsyncStorage.getItem('shoppingLists');
       let loaded = await JSON.parse(msg);
-      //console.log("Loaded: " + loaded);
       if(Array.isArray(loaded)) setShoppingLists(loaded);
       else setShoppingLists([]);
     } catch(e) {
@@ -95,10 +88,8 @@ const App = () => {
 
   const saveShoppingLists = async (lists) => {
     try{
-      //console.log("Lists: " + lists);
       await AsyncStorage.removeItem('shoppingLists');
       var json = JSON.stringify(lists);
-      //console.log("Saved: " + json);
       await AsyncStorage.setItem('shoppingLists', json)
     } catch(e) {
       console.log(e);
@@ -140,7 +131,6 @@ const App = () => {
   const authContext = React.useMemo(() => ({
     signIn: async(userName, password) => {
       setScreenIsWaiting(true);
-      //console.log(screenIsWaiting);
       Keyboard.dismiss();
       let userToken;
       userToken = null;
@@ -215,7 +205,6 @@ const App = () => {
       } catch(e) {
         console.log(e);
       }
-      //setIsDarkTheme(false);
       dispatch({ type: 'LOGOUT' });
     },
     signUp: async(userEmail, userName, password, confirm_password) => {

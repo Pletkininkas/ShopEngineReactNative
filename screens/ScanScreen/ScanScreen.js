@@ -1,25 +1,20 @@
 import React, {useState, useEffect} from 'react';
-import { Button, LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, StyleSheet , TouchableOpacity, Dimensions, SafeAreaView, Modal, BackHandler, Picker, Alert} from 'react-native';
-import { useTheme, useFocusEffect } from '@react-navigation/native';
+import { LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, TouchableOpacity, Picker, Alert} from 'react-native';
+import { useTheme } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker'    // expo install expo-image-picker
 //import { ExpoImageManipulator } from 'react-native-expo-image-cropper'   // yarn add react-native-expo-image-cropper
 import * as Permissions from 'expo-permissions'
 import {Asset} from 'expo-asset'
 import {SwipeListView} from 'react-native-swipe-list-view'
-import config, {drawer, updateDrawer, user} from '../../config'
+import config, { updateDrawer, user} from '../../config'
 import styles from './styles.js'
 import State from './state.js'
 import { ImageManipulator } from 'expo-image-crop'
 
-
-
-
-
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
 
 const ScanScreen = ({ navigation }) => {
     const[uri, setUri] = useState(null)
@@ -30,8 +25,6 @@ const ScanScreen = ({ navigation }) => {
     const[compareList, setCompareList] = useState(null)
     const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
     const[screenState, setScreenState] = useState(State.ScreenState.pickingPhotoMethod)
-    
-    
 
     const theme = useTheme();
     const faceUri = Asset.fromModule(require('../../assets/sadface.png')).uri;
@@ -43,7 +36,6 @@ const ScanScreen = ({ navigation }) => {
         {key: 'NORFA', id:4, uri:Asset.fromModule(require('../../assets/shop_logos/NORFA.png')).uri},
         {key: 'RIMI', id:5, uri:Asset.fromModule(require('../../assets/shop_logos/RIMI.png')).uri},
     ]
-
 
      useEffect(() => {
         const unsubscribe = navigation.addListener('focus', () => {
@@ -161,9 +153,7 @@ const ScanScreen = ({ navigation }) => {
 
     const _onCompareListConfirm = async () =>
     {
-        console.log(user.automaticallySaveReceipts);
         if(user.automaticallySaveReceipts){
-            _showToast("Saving receipt");
             _manualSave();
         } else {
             Alert.alert(
@@ -187,6 +177,7 @@ const ScanScreen = ({ navigation }) => {
     }
 
     const _manualSave = async () => {
+        _showToast("Saving receipt");
         setLoadingMsg("Saving to shopping history...")
         setScreenState(State.ScreenState.showLoading);
         let products = await _convertProductsList();
