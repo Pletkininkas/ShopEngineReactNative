@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, Text, SafeAreaView, FlatList, TouchableOpacity, Button, StyleSheet} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet} from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import {SwipeListView} from 'react-native-swipe-list-view'
 
@@ -7,7 +7,6 @@ import {SwipeListView} from 'react-native-swipe-list-view'
 import styles from '../config/styles';
 import {ShoppingListContext} from '../components/context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useEffect } from 'react/cjs/react.development';
 
 const HomeScreen = ({ navigation }) => {
     

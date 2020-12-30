@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Dimensions, ScrollView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { LineChart, BarChart, StackedBarChart} from "react-native-chart-kit";
+import { LineChart, StackedBarChart} from "react-native-chart-kit";
 import moment from 'moment';
 import {Svg, Rect, Text as TextSVG} from 'react-native-svg';
 import styles from '../config/styles';

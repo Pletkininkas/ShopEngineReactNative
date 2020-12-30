@@ -1,4 +1,5 @@
 import {API_URL} from '@env'
+import AsyncStorage from '@react-native-community/async-storage';
 
 export default {
     API_URL
@@ -23,13 +24,15 @@ export const setUser = (username, usertoken) => {
     user.token = usertoken
 };
 
-export const setUserPrefs = (language, allowPushNotifications, automaticallySaveReceipts) => {
-    user.language = language,
-    user.allowPushNotifications = allowPushNotifications,
-    user.automaticallySaveReceipts = automaticallySaveReceipts
+export const setUserPrefs = async (language, allowPushNotifications, automaticallySaveReceipts) => {
+    user.language = language;
+    user.allowPushNotifications = allowPushNotifications;
+    user.automaticallySaveReceipts = automaticallySaveReceipts;
+    await AsyncStorage.setItem('optionAutomaticReceiptSave', automaticallySaveReceipts.toString());
+    await AsyncStorage.setItem('optionAllowPushNotifications', allowPushNotifications.toString());
 };
 
-export const setReceiptsHistory = (totalSaved, receiptCount, receipt) => {
+export const setReceiptHistory = (totalSaved, receiptCount, receipt) => {
     if (totalSaved != null) {
         user.receiptTotalSaved = totalSaved;
     }

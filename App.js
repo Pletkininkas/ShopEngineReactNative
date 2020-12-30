@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, Alert, Keyboard, StatusBar, StyleSheet } from 'react-native';
+import { View, Alert, Keyboard, StatusBar, StyleSheet, ToastAndroid } from 'react-native';
 import { 
   NavigationContainer, 
   DefaultTheme as NavigationDefaultTheme,
@@ -23,20 +23,15 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext, apiUrl, ShoppingListContext } from './components/context';
+import { AuthContext, ShoppingListContext } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
 import AsyncStorage from '@react-native-community/async-storage'
 
 import config, { user, setUser } from './config'
-import { set } from 'react-native-reanimated';
 
 const Drawer = createDrawerNavigator();
-
-/* function sleep(ms) {
-  return new Promise(reslove => setTimeout(reslove, ms));
-} */
 
 const App = () => {
   const [isDarkTheme, setIsDarkTheme] = React.useState(false);
@@ -82,7 +77,6 @@ const App = () => {
     try{
       let msg = await AsyncStorage.getItem('shoppingLists');
       let loaded = await JSON.parse(msg);
-      console.log("Loaded: " + loaded);
       if(Array.isArray(loaded)) setShoppingLists(loaded);
       else setShoppingLists([]);
     } catch(e) {
@@ -94,10 +88,8 @@ const App = () => {
 
   const saveShoppingLists = async (lists) => {
     try{
-      console.log("Lists: " + lists);
       await AsyncStorage.removeItem('shoppingLists');
       var json = JSON.stringify(lists);
-      console.log("Saved: " + json);
       await AsyncStorage.setItem('shoppingLists', json)
     } catch(e) {
       console.log(e);
@@ -139,7 +131,6 @@ const App = () => {
   const authContext = React.useMemo(() => ({
     signIn: async(userName, password) => {
       setScreenIsWaiting(true);
-      console.log(screenIsWaiting);
       Keyboard.dismiss();
       let userToken;
       userToken = null;
@@ -167,6 +158,7 @@ const App = () => {
         try{
           await AsyncStorage.setItem('userToken', userToken)
           await AsyncStorage.setItem('userName', userName);
+          await AsyncStorage.setItem('darkTheme', 'false');
           user.token = userToken;
           user.username = userName;
         } catch(e) {
@@ -180,6 +172,9 @@ const App = () => {
           );
         }
       } else {
+        if (errorMessage == null) {
+          errorMessage = 'Could not connect to the server. Please try again later.';
+        }
         Alert.alert(
           'Sign In',
           errorMessage,
@@ -198,10 +193,18 @@ const App = () => {
         user.username = null;
         await AsyncStorage.removeItem('userToken');
         await AsyncStorage.removeItem('userName');
+        await AsyncStorage.removeItem('profileImage');
+        await AsyncStorage.removeItem('darkTheme');
+        await AsyncStorage.removeItem('userTotalSaved');
+        await AsyncStorage.removeItem('userReceiptCount');
+        await AsyncStorage.removeItem('userReceipt');
+        user.receiptCount = 0;
+        user.receiptTotalSaved = 0.00;
+        user.receipt = null;
+        user.profileImage = null;
       } catch(e) {
         console.log(e);
       }
-      setIsDarkTheme(false);
       dispatch({ type: 'LOGOUT' });
     },
     signUp: async(userEmail, userName, password, confirm_password) => {
@@ -243,18 +246,22 @@ const App = () => {
           { cancelable: true }
         );
       } else {
-        Alert.alert(
-          'Sign Up - Success',
-          'You have successfully signed up!\nNow you can log in.',
-          [
-            { text: 'OK', onPress: () => {} }
-          ],
-          { cancelable: true }
-        );
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Registration was successful!', ToastAndroid.SHORT)
+        } else {
+            Alert.alert('Registration was successful!');
+        }
+        authContext.signIn(userName, password);
       }
     },
-    toggleTheme: () => {
-      setIsDarkTheme( isDarkTheme => !isDarkTheme );
+    toggleTheme: async () => {
+      setIsDarkTheme(isDarkTheme => !isDarkTheme);
+      let themeStorage = await AsyncStorage.getItem('darkTheme');
+      if (themeStorage == 'true') {
+        await AsyncStorage.setItem('darkTheme', 'false');
+      } else {
+        await AsyncStorage.setItem('darkTheme', 'true');
+      }
     }
   }), []);
 
@@ -266,6 +273,37 @@ const App = () => {
       try{
         userToken = await AsyncStorage.getItem('userToken')
         let userName = await AsyncStorage.getItem('userName');
+        let automaticSaveReceipt = await AsyncStorage.getItem('optionAutomaticReceiptSave');
+        let pushNotifications = await AsyncStorage.getItem('optionAllowPushNotifications');
+        let themeStorage = await AsyncStorage.getItem('darkTheme');
+        if (themeStorage == 'true')
+            setIsDarkTheme(isDarkTheme => !isDarkTheme);
+        if (automaticSaveReceipt != null) {
+          switch(automaticSaveReceipt) {
+            case 'true':
+              user.automaticallySaveReceipts = true;
+              break;
+            case 'false':
+              user.automaticallySaveReceipts = false;
+              break;
+            default:
+              user.automaticallySaveReceipts = true;
+              break;
+          }
+        }
+        if (pushNotifications != null) {
+          switch(pushNotifications) {
+            case 'true':
+              user.allowPushNotifications = true;
+              break;
+            case 'false':
+              user.allowPushNotifications = false;
+              break;
+            default:
+              user.allowPushNotifications = true;
+              break;
+          }
+        }
         user.userName = userName;
         setUser(userName, userToken);
       } catch(e) {

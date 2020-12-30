@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, Alert, Image, ImageBackground } from 'react-native';
 import {
     useTheme,
@@ -19,16 +19,18 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import { AuthContext } from '../components/context';
-import config, { user, setReceiptsHistory, drawer, defaultImages, setProfileImage } from '../config';
+import config, { user, setReceiptHistory, drawer, defaultImages, setProfileImage } from '../config';
 
 import configColors from '../config/colors';
 import { useEffect } from 'react/cjs/react.development';
+import AsyncStorage from '@react-native-community/async-storage';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 export function DrawerContent(props) {
     const paperTheme = useTheme();
     const { signOut, toggleTheme } = React.useContext(AuthContext);
-    const updateDrawer = React.useState(drawer.update);
-    const [encodedBase64, setEncodedBase64] = React.useState(defaultImages.profile);
+    const [updateDrawer, setUpdateDrawer] = React.useState(drawer.update);
+    const [encodedBase64, setEncodedBase64] = React.useState(user.profileImage);
 
     const fetchUserData = () => {
         fetch(config.API_URL+'receipt', {
@@ -49,7 +51,9 @@ export function DrawerContent(props) {
                 });
                 
             });
-            setReceiptsHistory(saved, Object(data.data).length, data.data);
+            let receiptCount = Object(data.data).length;
+            setReceiptHistory(saved, receiptCount, data.data);
+            _saveReceiptHistory(saved, receiptCount, data.data);
             })
             .catch(err => {
             console.log(err);
@@ -57,16 +61,76 @@ export function DrawerContent(props) {
     }
 
     useEffect(() => {
-        fetchUserData();
+        _setProfileImageStorage();
+        _updateDrawerReceiptHistory();
         fetchUserProfileImage();
+    }, [encodedBase64]);
 
+    useEffect(() => {
+        fetchUserData();
+        
         const interval=setInterval(()=>{
             fetchUserData()
             },10000)
                 
-                
         return()=>clearInterval(interval)
-    }, []);
+    }, [updateDrawer]);
+
+    const _saveReceiptHistory = async (totalSaved, receiptCount, receipt) => {
+        if (totalSaved != null) {
+            await AsyncStorage.setItem('userTotalSaved', totalSaved.toString());
+        }
+        if (receiptCount != null) {
+            await AsyncStorage.setItem('userReceiptCount', receiptCount.toString());
+        }
+        if (receipt != null) {
+            await AsyncStorage.setItem('userReceipt', JSON.stringify(receipt));
+        }
+    };
+
+    const _updateDrawerReceiptHistory = async () => {
+        try {
+            let userTotalSaved = await AsyncStorage.getItem('userTotalSaved');
+            
+            let userReceiptCount = await AsyncStorage.getItem('userReceiptCount');
+            let userReceipt = await AsyncStorage.getItem('userReceipt');
+            if (userTotalSaved != null && userReceiptCount != null && userReceipt != null) {
+                user.receiptTotalSaved = parseFloat(userTotalSaved);
+                user.receiptCount = parseInt(userReceiptCount);
+                user.receipt = JSON.parse(userReceipt);
+                setUpdateDrawer(true);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    const _saveProfileImageStorage = async (imageBase64) => {
+        try {
+            await AsyncStorage.setItem(
+                'profileImage',
+                imageBase64
+            );
+            
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const _setProfileImageStorage = async () => {
+        try {
+            let receivedImage = await AsyncStorage.getItem('profileImage');
+            if (receivedImage != null) {
+                setEncodedBase64(receivedImage);
+                setProfileImage(receivedImage);
+            } else {
+                setEncodedBase64(defaultImages.profile);
+                setProfileImage(encodedBase64);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     const fetchUserProfileImage = () => {
         fetch(config.API_URL+'user', {
@@ -77,26 +141,31 @@ export function DrawerContent(props) {
             'Authorization': 'Bearer ' + user.token
             }
         }).then(data => {
-            return data.json();
+                return data.json();
             })
-            .then(data => {
-                if (data.data != null) {
-                    setEncodedBase64(data.data.imageData);
-                    setProfileImage(data.data.imageData);
-                } else {
-                    setProfileImage(defaultImages.profile);
-                }
-            })
-            .catch(err => {
+        .then(data => {
+            if (data.data != null) {
+                setEncodedBase64(data.data.imageData);
+                setProfileImage(data.data.imageData);
+                _saveProfileImageStorage(data.data.imageData);
+            } else {
+                setEncodedBase64(defaultImages.profile);
+                setProfileImage(defaultImages.profile);
+                _saveProfileImageStorage(defaultImages.profile);
+            }
+        })
+        .catch(err => {
             console.log(err);
-            });
+        });
     }
 
-    const returnUpdatedDrawer = () => {
+    const returnUpdatedDrawer = (props) => {
         return(
             <ImageBackground style={styles.userInfoSection} source={require('../assets/profile_bg.jpg')}>
                 <View style={{flexDirection: 'row', marginTop: 15}}>
+                    <TouchableOpacity style={{width: 75, height: 75}} onPress={() => {props.navigation.navigate('Profile')}}>
                     <Image style={{width: 75, height: 75, borderRadius: 63}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
+                    </TouchableOpacity>
                     <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                         <Title style={styles.title}>{user.username}</Title>
                         <Caption style={styles.caption}>User</Caption>
@@ -120,7 +189,7 @@ export function DrawerContent(props) {
         <View style={{flex:1}}>
             <DrawerContentScrollView { ... props}>
                 <View style={styles.drawerContent}>
-                    { updateDrawer ? returnUpdatedDrawer() :
+                    { updateDrawer ? returnUpdatedDrawer(props) :
                         <View style={styles.userInfoSection}>
                             <View style={{flexDirection: 'row', marginTop: 15}}>
                                 <Icon

@@ -11,12 +11,10 @@ import {
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import { useTheme } from '@react-navigation/native';
 
 import configColors from '../config/colors'
 
 const SplashScreen = ({ navigation }) => {
-    //const { colors } = useTheme();
     return (
         <View style={styles.container}>
             <StatusBar hidden={true} />
@@ -34,7 +32,7 @@ const SplashScreen = ({ navigation }) => {
                 <Animatable.Image
                 animation="bounceIn"
                 duration={2500}
-                source={require('../assets/stadia.png')}
+                source={require('../assets/icon.png')}
                 style={styles.logo}
                 resizeMode="stretch"
                 />

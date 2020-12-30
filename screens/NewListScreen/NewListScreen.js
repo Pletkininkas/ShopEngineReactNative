@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Button, View, Text, Image, StyleSheet, SafeAreaView, FlatList, Item, ListItem, TouchableHighlight, TouchableOpacity, TouchableHighlightBase } from 'react-native';
-import { useLinkProps, useTheme } from '@react-navigation/native';
+import { View, Text, Image, SafeAreaView, FlatList, TouchableOpacity } from 'react-native';
+import { useTheme } from '@react-navigation/native';
 
 import styles from '../../config/styles';
 import screenStyles from './styles.js'
@@ -8,8 +8,6 @@ import State from './state.js'
 
 import config from '../../config';
 import { TextInput } from 'react-native-paper';
-import { debug, max, min } from 'react-native-reanimated';
-import { ThemeColors } from 'react-navigation';
 import {ShoppingListContext} from '../../components/context'
 
 const NewListScreen = ({navigation}) => {

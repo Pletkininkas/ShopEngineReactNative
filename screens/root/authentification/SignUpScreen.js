@@ -7,8 +7,6 @@ import {
     TextInput,
     Platform,
     StatusBar,
-    Dimensions,
-    Image,
     ScrollView,
     Alert
 } from 'react-native';
