@@ -4,6 +4,7 @@ import { useTheme } from "@react-navigation/native";
 import styles from '../config/styles';
 import {SwipeListView} from 'react-native-swipe-list-view'
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import moment from 'moment';
 
 import Modal from 'react-native-modal';
 import config, { user, drawer } from '../config';
@@ -68,8 +69,8 @@ const ShoppingHistoryScreen = () => {
                 </View>
                 <View styles={{flex: 1, justifyContent: 'space-between', flexDirection: 'column'}}>
                   <View styles={{flex: 0.5}}>
-                    <Text style={{color: theme.dark ? colors.white : colors.dark}}> {item.date}</Text>
-                    <Text style={{color: theme.dark ? colors.white : colors.dark}}> Total: {item.total}€</Text>
+                    <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}> {moment(item.date).format('YYYY/MM/DD HH:mm:ss')}</Text>
+                    <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}> Total: {item.total}€</Text>
                   </View>
                 </View>
               </View>
@@ -122,43 +123,28 @@ const ShoppingHistoryScreen = () => {
     }
 
     const receiptModal = (receipt) => {
-      var date = new Date(receipt.date);
-      var hours = date.getHours();
-      var minutes = date.getMinutes();
-      var newformat = (date.getHours() - 1) >= 12 ? 'PM' : 'AM';  
+      var date = moment(new Date(receipt.date)).subtract(2, 'hour');
 
-      // AM/PM
-      hours = (hours - 1) % 12;  
-      // 0/12
-      hours = hours ? hours : 12;  
-      minutes = minutes < 10 ? '0' + minutes : minutes; 
-      var formatted = 
-        (date.toString().split(' ')[0]) 
-        + ', ' +('0' + (date.getDate() - 1) ).slice(-2) 
-        + '/' + ('0' + (date.getMonth() + 1) ).slice(-2)
-        + '/' + (date.getFullYear())
-        + ' - ' + ('0' + date.getHours()).slice(-2)
-        + ':' + ('0' + date.getMinutes()).slice(-2)
-        + ' ' + newformat;
+      var formatted = date.format('YYYY/MM/DD HH:mm:ss');
 
       return (
         <View style={{alignItems: 'center'}}>
           {renderShopLogo(receipt.shop, contentStyles.modalItemShopImage)}
-          <Text style={[{color: theme.dark ? colors.white : colors.dark}, {fontSize: 20}]}>{formatted}</Text>
-          <Text style={[{color: theme.dark ? colors.white : colors.dark}, {fontSize: 20}]}>Total price: {receipt.total}€</Text>
+          <Text style={[{color: theme.dark ? colors.white : colors.dark}, {fontSize: 20, fontWeight: "bold"}]}>{formatted}</Text>
+          <Text style={[{color: theme.dark ? colors.white : colors.dark}, {fontSize: 20, fontWeight: "bold"}]}>Total price: {receipt.total}€</Text>
             <FlatList
               decelerationRate='normal'
               showsVerticalScrollIndicator={false}
               data={receipt.receiptProducts}
               renderItem={({item}) => (
                 <View style={[contentStyles.modalItem, {backgroundColor: theme.dark ? colors.lightGrey : colors.white}]}>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark}}>Product: {item.name}</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Product: {item.name}</Text>
                   { item.discount != 0.00 ?
-                  (<View><Text style={{color: theme.dark ? colors.white : colors.dark}}>Total price: {(item.price-item.discount).toFixed(2)}€</Text>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark}}>Price: {item.price}€</Text>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark}}>Discount: {item.discount}€</Text></View>)
+                  (<View><Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Total price: {(item.price-item.discount).toFixed(2)}€</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Price: {item.price}€</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Discount: {item.discount}€</Text></View>)
                   :
-                  (<Text style={{color: theme.dark ? colors.white : colors.dark}}>Price: {item.price}€</Text>)
+                  (<Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Price: {item.price}€</Text>)
                   }
                 </View>
               )}
