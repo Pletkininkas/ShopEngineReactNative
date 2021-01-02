@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, StyleSheet, Alert, Image, ImageBackground } from 'react-native';
 import {
     useTheme,
@@ -22,7 +22,6 @@ import { AuthContext } from '../components/context';
 import config, { user, setReceiptHistory, drawer, defaultImages, setProfileImage } from '../config';
 
 import configColors from '../config/colors';
-import { useEffect } from 'react/cjs/react.development';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
@@ -32,7 +31,29 @@ export function DrawerContent(props) {
     const [updateDrawer, setUpdateDrawer] = React.useState(drawer.update);
     const [encodedBase64, setEncodedBase64] = React.useState(user.profileImage);
 
-    const fetchUserData = () => {
+    var products;
+
+    async function fetchProducts(){
+        var _products = []
+        try{
+          var response = fetch(config.API_URL+'product', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          }
+          });
+          var data = await response;
+          _products = await data.json();
+        }catch(err){
+          console.error(err);
+        }
+        products = _products.data;
+      }
+    
+    fetchProducts();
+
+    async function fetchUserData() {
         fetch(config.API_URL+'receipt', {
             method: 'GET',
             headers: {
@@ -45,11 +66,7 @@ export function DrawerContent(props) {
             })
             .then(data => {
                 let saved = 0;
-                data.data.forEach(element => {
-                    element.receiptProducts.forEach(product => {
-                    saved+=(product.discount*(-1));
-                    });
-                });
+                data.data.forEach(element => {saved += calculateSavings(element)});
                 let receiptCount = Object(data.data).length;
                 setReceiptHistory(saved, receiptCount, data.data);
                 _saveReceiptHistory(saved, receiptCount, data.data);
@@ -57,6 +74,31 @@ export function DrawerContent(props) {
             .catch(err => {
                 console.log(err);
             });
+    }
+
+    function calculateSavings(receipt){
+        var sum = 0;
+        receipt.receiptProducts.forEach(product => {
+            var result = getMaxPrice(product);
+            if(result > product.price) {
+                sum+=result - product.price;
+            }  
+        });
+        return sum;
+    }
+
+    function getMaxPrice(item){
+        var maxPrice = Number.NEGATIVE_INFINITY;
+        var product = products.find(x => x.name == item.name);
+        if(product != undefined){
+            var amount = item.price / item.pricePerQuantity;
+            for(var shop in product.shopPrices){
+                var price = product.shopPrices[shop] * amount;
+                if(price > maxPrice) maxPrice = price;
+            }
+        }
+        if(maxPrice == Number.NEGATIVE_INFINITY) maxPrice = 0;
+        return maxPrice;
     }
 
     React.useEffect(() => {
