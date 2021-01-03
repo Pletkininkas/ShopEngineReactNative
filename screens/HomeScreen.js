@@ -19,11 +19,11 @@ const HomeScreen = ({ navigation }) => {
     const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
     const lists = useContext(ShoppingListContext);
     const [data, setData] = useState([]);
-
+  
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
           fetchUserReceipts();
-          
+            
       });
 
       return unsubscribe;
@@ -82,6 +82,15 @@ const HomeScreen = ({ navigation }) => {
       return shopsData;
     } 
 
+    const updatedColorsData = () => {
+      let tempData = [];
+      data.forEach(e => {
+        e.legendFontColor = textColor;
+        tempData.push(e);
+      });
+      return tempData;
+    }
+
     const deleteList = (list) => {
       var removed = lists.shoppingLists.filter(x => x.name != list.name);
       lists.setShoppingLists(removed);
@@ -104,7 +113,7 @@ const HomeScreen = ({ navigation }) => {
     const renderPie = () => {
       return (
         <PieChart
-          data={data}
+          data={updatedColorsData()}
           width={screenWidth-40}
           height={220}
           chartConfig={{
