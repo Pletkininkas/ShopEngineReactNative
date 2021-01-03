@@ -25,6 +25,7 @@ const NewListScreen = ({navigation}) => {
   const [chosenShops, setChosenShops] = useState([]);
   const [listShops, setListShops] = useState([]);
   const [listName, setListName] = useState("New Shopping List");
+  const [searchText, setSearchText] = useState("");
 
   const theme = useTheme();
   const textColor = theme.dark ? '#fff' : '#000';
@@ -67,8 +68,10 @@ const NewListScreen = ({navigation}) => {
     if(listsContext.currentList != undefined && listsContext.currentList != null){
       setShoppingList(listsContext.currentList.items);
       setListName(listsContext.currentList.name);
+      console.log("hello 2?");
     }else{
       setShoppingList([]);
+      console.log("hello?");
       setListName("New Shopping List");
     }
     
@@ -93,6 +96,7 @@ const NewListScreen = ({navigation}) => {
   }
 
   const _searchProducts = async (entry) => {
+    setSearchText(entry);
     var upperEntry = entry.toUpperCase();
     if (entry === ""){
       setDisplayedProducts(products);
@@ -226,12 +230,15 @@ const NewListScreen = ({navigation}) => {
 
   const _configureOptimization = () =>{
     _getListShops();
-    setScreenState(optimizingList);
+    setChosenShops([]);
+    setOnlyReplaceUnspecifiedShops(false);
+    setScreenState(State.ScreenState.optimizingList);
   }
 
   const _optimizeList = async () => {
-    setScreenState(comparingOptimizedList);
+    setScreenState(State.ScreenState.loading);
     await _getOptimizedList();
+    setScreenState(State.ScreenState.comparingOptimizedList);
   }
 
   const _addItemToShoppingList = (item) => {
@@ -335,45 +342,44 @@ const NewListScreen = ({navigation}) => {
     return ({min: minDiff, max: maxDiff});
   }
 
-  const {viewingList, selectingItem, configuringItem, optimizingList, comparingOptimizedList} = State.ScreenState;
+  const {viewingList, selectingItem, configuringItem, optimizingList, comparingOptimizedList, loading} = State.ScreenState;
   switch(screenState){
     case viewingList:
       return (
         <View style={styles().containerm}>
           <View style={styles().body}>
-            <View style={{flexDirection: 'row', justifyContent: "center", padding: 10, marginLeft: '3%', marginRight: '3%'}}>
+            <View style={{flexDirection: 'row', flex: 1, justifyContent: "center", padding: 5, marginLeft: '3%', marginRight: '3%'}}>
               <TextInput
-                  style={{height: 80, flex: 2}}
+                  style={{height: 80, flex: 2, alignSelf: 'center', marginLeft: '15%'}}
                   placeholder="Name"
                   value={listName}
                   defaultValue={listName}
                   onChangeText={text => setListName(text)}/>
-              <View style={{flex: 0.3}}/>
               <TouchableOpacity 
-                  style={[shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton, {flex: 2}]} 
+                  style={[shoppingList.length > 0 ? screenStyles.smallButton : screenStyles.disabledSmallButton, {flex: 1, alignSelf: 'center'}]} 
                   onPress={() => _saveList()}
                   disabled={shoppingList.length > 0 ? false : true}>
-                  <Text style={{color: textColor}}>Save List</Text>
+                  <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Save</Text>
               </TouchableOpacity>
             </View>
-            <View alignItems="center" style={{marginLeft: '3%', marginRight: '3%'}}>
-              <View style={{flexDirection: 'row', padding: 10}}>
-                <Text style={{marginBottom: 10, color: textColor, alignSelf: "center", marginTop: 10, flexWrap: "wrap", flex: 2}}>Estimated Price:{"\n"}{displayPrice(calculatePriceRange(shoppingList))}</Text>
-                <View style={{flex: 0.3}}/>
-                <TouchableOpacity 
-                  style={[shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton, {flex: 2}]} 
-                  disabled={shoppingList.length > 0 ? false : true} 
-                  onPress={() => _configureOptimization()}>
-                  <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Find Cheaper List</Text>
-                </TouchableOpacity>
-              </View>
+            <View alignItems="center" style={{marginLeft: '5%', marginRight: '3%', flex: 0.3}}>
+            <Text style={{fontSize: 18, marginBottom: 0, color: textColor, alignSelf: "center", marginTop: 0, flexWrap: "wrap", flex: 2}}>Estimated Price: {displayPrice(calculatePriceRange(shoppingList))}€</Text>
+            </View>
+            <View style={{flexDirection: 'row', flex: 0.5, justifyContent: "center", marginLeft: '3%', marginRight: '3%', marginTop: 5}}>
               <TouchableOpacity 
-                style={[screenStyles.button]} 
+                style={[screenStyles.button, {marginTop: 0}]} 
                 onPress={() => _selectItem()}>
                 <Text style={{color: textColor}}>Add Item</Text>
               </TouchableOpacity>
+              <View style={{flex: 0.5}}/>
+              <TouchableOpacity 
+                style={[shoppingList.length > 0 ? screenStyles.button : screenStyles.disabledButton, {marginTop: 0}]} 
+                disabled={shoppingList.length > 0 ? false : true} 
+                onPress={() => _configureOptimization()}>
+                <Text style={shoppingList.length > 0 ? {color: textColor} : screenStyles.disabledText}>Find Cheaper List</Text>
+              </TouchableOpacity>
             </View>
-            <SafeAreaView style={{color:"#ccc", marginBottom: 240}}>
+            <SafeAreaView style={{color:"#ccc", flex: 3}}>
                 <FlatList
                   decelerationRate='normal'
                   showsVerticalScrollIndicator={false}
@@ -413,9 +419,18 @@ const NewListScreen = ({navigation}) => {
       return (
         <View style={styles().containerm}>
             <View style={styles().body}>
-              <TextInput style={{height: 50, marginRight: "20%", marginLeft: "20%", marginTop: 10, marginBottom: 10}} 
-                placeholder="Search" 
-                onChangeText={text => _searchProducts(text)}/>
+              <View style={{flexDirection: 'row', marginTop: 5, padding: 10}}>
+                <TextInput style={{height: 50, flex: 3, marginLeft: '20%'}} 
+                  placeholder="Search"
+                  value={searchText}
+                  onChangeText={text => _searchProducts(text)}/>
+                <View style={{flex: 0.2}}/>
+                <TouchableOpacity 
+                  style={[screenStyles.button, {flex: 1}]} 
+                  onPress={() => setScreenState(State.ScreenState.viewingList)}>
+                  <Text style={{color: textColor}}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
               <SafeAreaView style={{color:"#ccc", marginBottom:70}}>
                 <FlatList
                   decelerationRate='normal'
@@ -459,10 +474,15 @@ const NewListScreen = ({navigation}) => {
               defaultValue={selectedAmount.toString()} 
               keyboardType="decimal-pad" 
               onChangeText={text => _changeAmount(text)}/>
-            <View alignItems="center">
+            <View flexDirection="row" alignSelf="center">
               <TouchableOpacity style={screenStyles.button} 
                 onPress={() => _addItemToShoppingList(selectedItem)}>
                 <Text style={{color: textColor}}>Add Item</Text>
+              </TouchableOpacity>
+              <View style={{flex: 0.3}}/>
+              <TouchableOpacity style={screenStyles.button} 
+                onPress={() => _selectItem()}>
+                <Text style={{color: textColor}}>Cancel</Text>
               </TouchableOpacity>
             </View>
             <SafeAreaView style={{color:"#ccc", marginBottom: 200}}>
@@ -478,7 +498,7 @@ const NewListScreen = ({navigation}) => {
                       <View style={[screenStyles.leftText, {flexDirection: 'row', width: '100%', flex: 1, display: 'flex'}]}>
                         <View style={{alignItems:'flex-start', justifyContent:'center', flex: 1}}>
                           <Text style={{color: textColor}}>Shop: {item.shop}</Text>
-                          <Text style={{color: textColor}}>Price: {item.price}</Text>
+                          <Text style={{color: textColor}}>Price: {item.price}€</Text>
                         </View>
                         <View style={{alignItems:'flex-end', justifyContent:'center'}}>
                           {renderShopLogo(item.shop, null)}
@@ -496,13 +516,20 @@ const NewListScreen = ({navigation}) => {
       return(
         <View style={styles().containerm}>
           <View style={styles().body}>
-            <View alignItems="center">
-              <TouchableOpacity 
-                style={chosenShops.length > 0 ? screenStyles.button : screenStyles.disabledButton} 
-                disabled={chosenShops.length > 0 ? false : true} 
-                onPress={() => _optimizeList()}>
-                <Text style={chosenShops.length > 0 ? {color: textColor} : screenStyles.disabledText}>Generate Cheaper List</Text>
-              </TouchableOpacity>
+            <View alignItems="center" style={{marginTop: 5}}>
+              <View style={{flexDirection: 'row', padding: 10}}>
+                <TouchableOpacity 
+                  style={[chosenShops.length > 0 ? screenStyles.button : screenStyles.disabledButton, {flex: 2, marginLeft: '10%'}]} 
+                  disabled={chosenShops.length > 0 ? false : true} 
+                  onPress={() => _optimizeList()}>
+                  <Text style={chosenShops.length > 0 ? {color: textColor} : screenStyles.disabledText}>Generate Cheaper List</Text>
+                </TouchableOpacity>
+                <View style={{flex: 0.3}}/>
+                <TouchableOpacity style={[screenStyles.button, {flex: 1, marginRight: '10%'}]} 
+                  onPress={() => setScreenState(State.ScreenState.viewingList)}>
+                  <Text style={{color: textColor}}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
               <TouchableOpacity 
                 style={onlyReplaceUnspecifiedShops ? screenStyles.highlightedItem : [screenStyles.item, {backgroundColor: itemColor}]} 
                 onPress={() => _checkSpecifiedShops()}>
@@ -510,7 +537,7 @@ const NewListScreen = ({navigation}) => {
                   <Text style={{color: textColor}}>Only replace unspecified shops</Text>
                 </View>
               </TouchableOpacity>
-              <Text style={{color: textColor}}>Select shops you can visit:</Text>
+              <Text style={{color: textColor, fontSize: 16, margin: 5}}>Select shops you can visit:</Text>
             </View>
             <SafeAreaView>
               <FlatList
@@ -534,20 +561,29 @@ const NewListScreen = ({navigation}) => {
         </View>
       );
     case comparingOptimizedList:
-      if(optimizedList.length > 0){
       return (
           <View style={styles().containerm}>
             <View style={styles().body}>
               <View alignItems="center">
-                <TouchableOpacity 
-                  style={screenStyles.button} 
-                  onPress={() => _replaceShoppingList()}>
-                  <View style={screenStyles.leftText}>
-                    <Text style={{color: textColor}}>Replace</Text>
-                  </View>
+                <View style={{flexDirection: 'row'}}>
+                  <TouchableOpacity 
+                    style={[screenStyles.button, {marginTop: 20}]} 
+                    onPress={() => _replaceShoppingList()}>
+                    <View style={screenStyles.leftText}>
+                      <Text style={{color: textColor}}>Replace</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <View style={{flex: 0.3}}/>
+                  <TouchableOpacity 
+                    style={[screenStyles.button, {marginTop: 20}]} 
+                    onPress={() => setScreenState(State.ScreenState.viewingList)}>
+                    <View style={screenStyles.leftText}>
+                      <Text style={{color: textColor}}>Cancel</Text>
+                    </View>
                 </TouchableOpacity>
-                <Text style={{margin:10, color: textColor}}>Estimated Price: {displayPrice(calculatePriceRange(optimizedList))}</Text>
-                <Text style={{margin:10, color: textColor}}>This list will save you: {displayPrice(comaparePriceRanges(shoppingList, optimizedList))}</Text>
+                </View>
+                <Text style={{margin:5, color: textColor}}>Estimated Price: {displayPrice(calculatePriceRange(optimizedList))}€</Text>
+                <Text style={{margin:5, color: textColor}}>This list will save you: {displayPrice(comaparePriceRanges(shoppingList, optimizedList))}€</Text>
               </View>
               <SafeAreaView>
                 <FlatList
@@ -565,7 +601,7 @@ const NewListScreen = ({navigation}) => {
                             <Text style={{color: textColor}}>{item.unit}</Text>
                             <Text style={{color: textColor}}>x{item.amount}</Text>
                             <Text style={{color: textColor}}>{item.shop}</Text>
-                            <Text style={{color: textColor}}>{(item.pricePerUnit * item.amount).toFixed(2)}</Text>
+                            <Text style={{color: textColor}}>{(item.pricePerUnit * item.amount).toFixed(2)}€</Text>
                           </View>
                           <View>
                             {renderShopLogo(item.shop, screenStyles.largeShopImage)}
@@ -579,18 +615,17 @@ const NewListScreen = ({navigation}) => {
             </View>
           </View>
         );
-      }else{
-        return(
-          <View style={styles().containerm}>
-            <View style={styles().body}>
-              <View alignItems="center" style={{height: '100%', justifyContent: "center"}}>
-                <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
-                <Text style={{color:'green'}}> Loading... </Text>
-              </View>
+    case loading:
+      return(
+        <View style={styles().containerm}>
+          <View style={styles().body}>
+            <View alignItems="center" style={{height: '100%', justifyContent: "center"}}>
+              <Image style={{width:128, height:128}} source={require('../../assets/loading.gif')}/>
+              <Text style={{color:'green'}}> Loading... </Text>
             </View>
           </View>
-        );
-      }
+        </View>
+      );
     default:
       return null;
   }

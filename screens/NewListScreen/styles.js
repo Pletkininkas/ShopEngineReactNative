@@ -27,6 +27,16 @@ export default StyleSheet.create({
       backgroundColor: "#1db954",
       borderRadius: 10,
     },
+    smallButton:{
+      marginRight: '10%',
+      marginLeft: '5%',
+      height: '40%',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      alignItems: 'center',
+      backgroundColor: "#1db954",
+      borderRadius: 10,
+    },
     disabledButton:{
       width: "40%",
       height: 40,
@@ -36,6 +46,16 @@ export default StyleSheet.create({
       marginBottom: 10,
       backgroundColor: "#667069",
       borderRadius: 10,
+    },
+    disabledSmallButton:{
+      marginRight: '10%',
+      marginLeft: '5%',
+      height: '40%',
+      justifyContent: 'center',
+      alignSelf: 'center',
+      alignItems: 'center',
+      backgroundColor: "#667069",
+      borderRadius: 10
     },
     disabledText:{
       alignSelf: 'center',
