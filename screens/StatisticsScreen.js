@@ -13,43 +13,61 @@ const StatisticsScreen = ({navigation}) => {
     const {colors} = useTheme();
     const [months, setMonths] = React.useState(['']);
     const [receipts, setReceipts] = React.useState(user.receipt);
+    const [totalSaved, setTotalSaved] = React.useState(user.receiptTotalSaved);
+    const [products, setProducts] = useState([]);
     const [tooltipPos,setTooltipPos] = useState(
       { x:0, y:0, visible:false, value:0 });
-    var numOfShoppings = [0, 0];
-    var totalNumOfShoppings = 0;
-    var total = 0;
-    var avgList = [];
-    avgList.length = 12;
-    var graphData = [];
-    graphData.length = 12; 
-    var savedMoneyData1 = [];
-    savedMoneyData1.length = 12;
-    const [savedMoneyData2, setSavedMoneyData2] = React.useState(user.receiptTotalSaved);  
+
+    useState(() => {fetchProducts().then(data => {setProducts(data);})});
 
     useEffect(() => {
       const unsubscribe = navigation.addListener('focus', () => {
         setMonths(getListOfAllMonths());
-        let token = user.token;
-        fetch(config.API_URL+'receipt', {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            }
-          }).then(data => {
-              return data.json();
-            })
-            .then(data => {
-              setReceipts(data.data);
-            })
-            .catch(err => {
-              console.log(err);
-            });    
+        setTotalSaved(user.receiptTotalSaved);
+        fetchReceipts().then(data => {setReceipts(data);})   
         });
-        return unsubscribe;
+      return unsubscribe;
         
     }, [navigation]);
+    
+
+    async function fetchProducts(){
+      var _products = []
+      try{
+        var response = fetch(config.API_URL+'product', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+        });
+        var data = await response;
+        _products = await data.json();
+      }catch(err){
+        console.error(err);
+      }
+      return _products.data;
+    }
+
+    async function fetchReceipts(){
+      var receipts = []
+      let token = user.token;
+      try{
+        var response = fetch(config.API_URL+'receipt', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+        });
+        var data = await response;
+        receipts = await data.json();
+      }catch(err){
+        console.error(err);
+      }
+      return receipts.data;
+    }
 
   function calculateAverage(numerator, denominator) {
     if (denominator === 0 || isNaN(denominator)) {
@@ -61,11 +79,19 @@ const StatisticsScreen = ({navigation}) => {
   }
 
   function getGraphData() {
+    var avgSpent;
+    var avgSaved;
+    var numOfShoppings = [0, 0];
+    var yearAverage;
+    var avgList = [];
+    var totalNumOfShoppings = 0;
+    var totalSpent = 0;
+    var savedList = [];
+    var savedMoneyList = [0, 0];
+    var graphData = [];
+    graphData.length = 12; 
     graphData.fill(0);
-    savedMoneyData1.fill(0);
-    graphData[10] = 14.78;//hardcoded value
-    total = 14.78;//hardcoded value
-    numOfShoppings[0]=2;//hardcoded value
+
     receipts.forEach(element => {
 
       var date = new Date(element.date);
@@ -79,29 +105,71 @@ const StatisticsScreen = ({navigation}) => {
       for (i = 0; startDate < currentDate; i++, startDate.add(1, 'months')) {
         if (year === startDate.year() && month === startDate.month())
         {
-          graphData[i] +=  element.total;
-          total += element.total;
+          graphData[i] +=  element.total 
+          totalSpent += element.total 
 
           element.receiptProducts.forEach(product => {
-            if(i==10||i==11){
-              savedMoneyData1[i-10]+=(product.discount*(-1));
-            }
+            if(i == 10 || i==11){
+              var result = getAvgPrice(product);
+              if(result > product.price) savedMoneyList[i-10]+= result - product.price;
+              numOfShoppings[i-10]++;  
+            }         
           });
 
           totalNumOfShoppings++;
-
-          if(i==10||i==11){
-            numOfShoppings[i-10]++;
-
-            // element.receiptProducts.forEach(product => {
-            //     savedMoneyData1[i-10]+=(product.discount*(-1));
-            // });
-          }
           break;
         }
       }
+      for (i = 0; i < 12; i++){
+        graphData[i] = Math.round(graphData[i]*100)/100;
+      }
     });
+
+    savedList.length =12;
+    savedList.fill(totalSaved);
+    //savedList.fill(4);
+
+    avgSpent = [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])];
+    avgSaved = [calculateAverage(savedMoneyList[0], numOfShoppings[0]), calculateAverage(savedMoneyList[1], numOfShoppings[1])];
+    yearAverage = calculateAverage(totalSpent, totalNumOfShoppings)
+    avgList.length = 12;
+    avgList.fill(yearAverage);
+    
+    return {graphData: graphData, avgSpent: avgSpent, avgSaved: avgSaved, yearAverage: yearAverage, avgList: avgList, savedList: savedList}
 }
+
+//     function getMaxPrice(item){
+//         var maxPrice = Number.NEGATIVE_INFINITY;
+//         var product = products.find(x => x.name == item.name);
+//         if(product != undefined){
+//           var amount = item.price / item.pricePerQuantity;
+//           for(var shop in product.shopPrices){
+//             var price = product.shopPrices[shop] * amount;
+//             if(price > maxPrice) maxPrice = price;
+//           }
+//         }
+//         if(maxPrice == Number.NEGATIVE_INFINITY){
+//           maxPrice = 0;
+//         }
+//         return maxPrice;
+//       }
+
+    function getAvgPrice(item){
+          var sum = 0;
+          var counter = 0; 
+          var amount = 0;
+          var product = products.find(x => x.name == item.name);
+          if(product != undefined){
+              if(item.pricePerQuantity > 0) amount = item.price / item.pricePerQuantity;
+              else amount = 1;
+            for(var shop in product.shopPrices){
+              var price = product.shopPrices[shop] * amount;
+              sum += price;
+              counter++;
+            }
+          }
+          return calculateAverage(sum, counter);
+        }
     
   function getListOfAllMonths() {
         var currentDate = moment();
@@ -115,17 +183,6 @@ const StatisticsScreen = ({navigation}) => {
         list.push(currentDate.format("MMM"));
         return list;
     }
-
-    getGraphData();
-
-    // const barData = {
-    //     labels: [months[10], months[11]],
-    //     datasets: [
-    //       {
-    //         data: [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])],
-    //       }
-    //     ]
-    //   };
 
     const lineChartConfig = {
       backgroundGradientFrom: configColors.green,
@@ -150,7 +207,6 @@ const StatisticsScreen = ({navigation}) => {
       backgroundGradientTo: configColors.green,
       color: () => colors.text,
       barPercentage: 2,
-      //data: barData.datasets,
       decimalPlaces: 2, 
       labelColor: () => colors.text,
       fillShadowGradient:configColors.green,
@@ -159,13 +215,6 @@ const StatisticsScreen = ({navigation}) => {
           borderRadius: 16
       },        
     };
-
-    var average = calculateAverage(total, totalNumOfShoppings)
-    avgList.fill(average);
-
-    var savedList = [];
-    savedList.length =12;
-    savedList.fill(savedMoneyData2);
   
     return (
       <View style={styles().containerm}>
@@ -181,17 +230,17 @@ const StatisticsScreen = ({navigation}) => {
                 labels: months,
                 datasets: [
                     {
-                        data: avgList,
+                        data: getGraphData().avgList,
                         withDots: false,
                         strokeWidth: 4,
                         color: () => colors.text,            
                     },
                     {
-                      data: graphData,  
+                      data: getGraphData().graphData,  
                       color: () => configColors.green                      
                   }
                 ],
-                legend: [`Year average (${average.toFixed(2)}€)`, "Total spendings"]
+                legend: [`Year average (${getGraphData().yearAverage.toFixed(2)}€)`, "Total spendings"]
                 }}
                 width={Dimensions.get("window").width - 20}
                 height={220}
@@ -237,8 +286,7 @@ const StatisticsScreen = ({navigation}) => {
                                         x={tooltipPos.x + 5}         
                                         y={tooltipPos.y + 30}
                                         fill={colors.text}
-                                        fontSize="12"          
-                                        //fontWeight="bold"          
+                                        fontSize="12"                  
                                         textAnchor="middle">          
                                         {tooltipPos.value + "€"}     
                                       </TextSVG>    
@@ -251,17 +299,17 @@ const StatisticsScreen = ({navigation}) => {
                 labels: months,
                 datasets: [
                     {
-                        data: savedList,
+                        data: getGraphData().savedList,
                         withDots: false,
                         strokeWidth: 4,
                         color: () => 'skyblue',            
                     },
                     {
-                      data: graphData,  
+                      data: getGraphData().graphData,  
                       color: () => configColors.green                      
                   }
                 ],
-                legend: [`You've saved (${savedMoneyData2.toFixed(2)}€)`, "Total spendings"]
+                legend: [`You've saved (${totalSaved.toFixed(2)}€)`, "Total spendings"]
                 }}
                 width={Dimensions.get("window").width - 20}
                 height={220}
@@ -303,8 +351,7 @@ const StatisticsScreen = ({navigation}) => {
                                         x={tooltipPos.x + 5}         
                                         y={tooltipPos.y + 30}
                                         fill={colors.text}
-                                        fontSize="12"          
-                                        //fontWeight="bold"          
+                                        fontSize="12"                   
                                         textAnchor="middle">          
                                         {tooltipPos.value + "€"}     
                                       </TextSVG>    
@@ -315,15 +362,15 @@ const StatisticsScreen = ({navigation}) => {
                 </ScrollView>
                 </View>
 
-                <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings</Text>
+                <Text style={{fontSize: 20, color: colors.text, textAlign: 'center'}}>Average Monthly Spendings {'&'} Savings</Text>
 
                 <StackedBarChart
                     data={{
                       labels: [months[10], months[11]],
                       legend: ['You\'ve spent', 'You\'ve saved'],
                       data: [
-                        [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(savedMoneyData1[0], numOfShoppings[0])], 
-                        [calculateAverage(graphData[11], numOfShoppings[1]), calculateAverage(savedMoneyData1[1], numOfShoppings[1])]
+                        [getGraphData().avgSpent[0], getGraphData().avgSaved[0]], 
+                        [getGraphData().avgSpent[1], getGraphData().avgSaved[1]]
                       ],
                       barColors: [configColors.green, colors.background],
                       
@@ -341,20 +388,6 @@ const StatisticsScreen = ({navigation}) => {
                     }}
                     
                 />
-                  {/* <BarChart
-                    data={barData}
-                    width={Dimensions.get("window").width - 20}
-                    height={220}
-                    yAxisSuffix="€"
-                    fromZero = "true"
-                    chartConfig={barChartConfig}
-                    showValuesOnTopOfBars="true"
-                    bezier
-                    style={{
-                      marginVertical: 8,
-                      borderRadius: 16
-                    }}
-                /> */}
             </View>             
             
       </View>
