@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, {useState, useEffect, useContext } from 'react';
 import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, ImageBackground} from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import {SwipeListView} from 'react-native-swipe-list-view'
@@ -7,6 +7,10 @@ import styles from '../config/styles';
 import {ShoppingListContext} from '../components/context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import config, { user } from '../config';
+import { PieChart } from 'react-native-chart-kit'
+import { Dimensions } from 'react-native'
+const screenWidth = Dimensions.get('window').width
+
 
 const HomeScreen = ({ navigation }) => {
     
@@ -14,6 +18,69 @@ const HomeScreen = ({ navigation }) => {
     const textColor = theme.dark ? '#fff' : '#000';
     const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
     const lists = useContext(ShoppingListContext);
+    const [data, setData] = useState([]);
+
+    useEffect(() => {
+      const unsubscribe = navigation.addListener('focus', () => {
+          fetchUserReceipts();
+          
+      });
+
+      return unsubscribe;
+  }, [navigation]);
+
+
+    const fetchUserReceipts = () => {
+      let token = user.token;
+      fetch(config.API_URL+'receipt', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        }
+      }).then(data => {
+          return data.json();
+        })
+        .then(data => {
+          setData(prepareData(data.data));
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+
+    const prepareData = (fetchedData) => {
+      let shopsData = [
+        { name: 'IKI', count: 0, color: 'yellow', legendFontColor: textColor, legendFontSize: 15 },
+        { name: 'MAXIMA', count: 0, color: 'blue', legendFontColor: textColor, legendFontSize: 15 },
+        { name: 'NORFA', count: 0, color: 'green', legendFontColor: textColor, legendFontSize: 15 },
+        { name: 'RIMI', count: 0, color: 'red', legendFontColor: textColor, legendFontSize: 15 },
+        { name: 'LIDL', count: 0, color: 'orange', legendFontColor: textColor, legendFontSize: 15 }
+      ];
+      for(const receipt of fetchedData){
+        switch(receipt.shop){
+          case "IKI":
+            shopsData.find(o => o.name === "IKI").count += 1;
+            break;
+          case "MAXIMA":
+            shopsData.find(o => o.name === "MAXIMA").count += 1;
+            break;
+          case "NORFA":
+            shopsData.find(o => o.name === "NORFA").count += 1;
+            break;
+          case "RIMI":
+            shopsData.find(o => o.name === "RIMI").count += 1;
+            break;
+          case "LIDL":
+            shopsData.find(o => o.name === "LIDL").count += 1;
+            break;
+                                
+        }
+      }
+      
+      return shopsData;
+    } 
 
     const deleteList = (list) => {
       var removed = lists.shoppingLists.filter(x => x.name != list.name);
@@ -29,8 +96,31 @@ const HomeScreen = ({ navigation }) => {
     const renderListText = () => {
       return (
         <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', marginTop: 20, fontSize: 20, color: textColor}]}>
-          {lists.shoppingLists.length == 0 ? "You don't have any shopping lists." : "These are your shopping lists:"}
+          {lists.shoppingLists.length == 0 ? "You don't have any shopping lists." : "Your shopping lists"}
         </Text>
+      )
+    }
+
+    const renderPie = () => {
+      return (
+        <PieChart
+          data={data}
+          width={screenWidth-40}
+          height={220}
+          chartConfig={{
+            backgroundColor: '#e26a00',
+            backgroundGradientFrom: '#fb8c00',
+            backgroundGradientTo: '#ffa726',
+            decimalPlaces: 2, // optional, defaults to 2dp
+            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+            style: {
+              borderRadius: 16
+            }
+          }}
+          accessor="count"
+          backgroundColor="transparent"
+          paddingLeft="15"
+        />
       )
     }
     
@@ -77,20 +167,15 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles().containerm}>
         <View style={styles().body}>
           <View style={screenStyle.body}>
-            <View style={screenStyle.headline}>
-              <ImageBackground
-                source={require("../assets/profile_bg.jpg")}
-                resizeMode="cover"
-                style={screenStyle.image}
-                imageStyle={screenStyle.image_imageStyle}
-              >
+            <View style={screenStyle.headline} backgroundColor = {theme.dark ? '#1c1c1c' : "white"} >
                 <View style={screenStyle.overlay}>
                   <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', fontWeight: 'bold', color: textColor}]}>Hi, {user.username}!</Text>
-                  {renderListText()}
-                </View>
-              </ImageBackground>
+                  <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', color: textColor}]}>Your favorite shops</Text>
+                  {renderPie()}
+              </View>
             </View>
-            <View style={{flex: 4}}>
+            {renderListText()}
+            <View style={{flex:4}}>
               {renderShoppingLists()}
             </View>
           </View>
@@ -109,8 +194,7 @@ const screenStyle = StyleSheet.create({
     flex: 1
   },
   headline: {
-    flex: 1,
-    height: 160,
+    flex:7,
     overflow: "hidden",
     borderRadius: 10,
     elevation: 5,
