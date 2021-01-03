@@ -32,8 +32,6 @@ export default StyleSheet.create({
       marginLeft: '5%',
       height: '40%',
       justifyContent: 'center',
-      alignSelf: 'center',
-      alignItems: 'center',
       backgroundColor: "#1db954",
       borderRadius: 10,
     },
@@ -52,8 +50,6 @@ export default StyleSheet.create({
       marginLeft: '5%',
       height: '40%',
       justifyContent: 'center',
-      alignSelf: 'center',
-      alignItems: 'center',
       backgroundColor: "#667069",
       borderRadius: 10
     },
@@ -76,11 +72,28 @@ export default StyleSheet.create({
     modalShopImage: {
       width: 50,
       height: 50,
-      resizeMode: 'contain'
+      resizeMode: 'contain',
+      alignSelf: 'center'
     },
     largeShopImage: {
       width: 80,
       height: 80,
-      resizeMode: 'contain'
+      resizeMode: 'contain',
+      alignSelf: 'center'
+    },
+    modalView: {
+      margin: 20,
+      backgroundColor: '#fff',
+      borderRadius: 20,
+      paddingVertical: 5,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5
     }
   });
