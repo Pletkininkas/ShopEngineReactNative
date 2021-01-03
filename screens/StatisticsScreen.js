@@ -109,17 +109,14 @@ const StatisticsScreen = ({navigation}) => {
           totalSpent += element.total 
 
           element.receiptProducts.forEach(product => {
-            var result = getMaxPrice(product);
-            if(result > product.price && i==10||i==11) {
-              savedMoneyList[i-10]+=result - product.price;
-            }           
+            if(i == 10 || i==11){
+              var result = getAvgPrice(product);
+              if(result > product.price) savedMoneyList[i-10]+= result - product.price;
+              numOfShoppings[i-10]++;  
+            }         
           });
 
           totalNumOfShoppings++;
-
-          if(i==10||i==11){
-            numOfShoppings[i-10]++;
-          }
           break;
         }
       }
@@ -130,6 +127,7 @@ const StatisticsScreen = ({navigation}) => {
 
     savedList.length =12;
     savedList.fill(totalSaved);
+    //savedList.fill(4);
 
     avgSpent = [calculateAverage(graphData[10], numOfShoppings[0]), calculateAverage(graphData[11], numOfShoppings[1])];
     avgSaved = [calculateAverage(savedMoneyList[0], numOfShoppings[0]), calculateAverage(savedMoneyList[1], numOfShoppings[1])];
@@ -140,21 +138,38 @@ const StatisticsScreen = ({navigation}) => {
     return {graphData: graphData, avgSpent: avgSpent, avgSaved: avgSaved, yearAverage: yearAverage, avgList: avgList, savedList: savedList}
 }
 
-    function getMaxPrice(item){
-        var maxPrice = Number.NEGATIVE_INFINITY;
-        var product = products.find(x => x.name == item.name);
-        if(product != undefined){
-          var amount = item.price / item.pricePerQuantity;
-          for(var shop in product.shopPrices){
-            var price = product.shopPrices[shop] * amount;
-            if(price > maxPrice) maxPrice = price;
-          }
-        }
-        if(maxPrice == Number.NEGATIVE_INFINITY){
-          maxPrice = 0;
-        }
-        return maxPrice;
-      }
+//     function getMaxPrice(item){
+//         var maxPrice = Number.NEGATIVE_INFINITY;
+//         var product = products.find(x => x.name == item.name);
+//         if(product != undefined){
+//           var amount = item.price / item.pricePerQuantity;
+//           for(var shop in product.shopPrices){
+//             var price = product.shopPrices[shop] * amount;
+//             if(price > maxPrice) maxPrice = price;
+//           }
+//         }
+//         if(maxPrice == Number.NEGATIVE_INFINITY){
+//           maxPrice = 0;
+//         }
+//         return maxPrice;
+//       }
+
+    function getAvgPrice(item){
+          var sum = 0;
+          var counter = 0; 
+          var amount = 0;
+          var product = products.find(x => x.name == item.name);
+          if(product != undefined){
+              if(item.pricePerQuantity > 0) amount = item.price / item.pricePerQuantity;
+              else amount = 1;
+            for(var shop in product.shopPrices){
+              var price = product.shopPrices[shop] * amount;
+              sum += price;
+              counter++;
+            }
+          }
+          return calculateAverage(sum, counter);
+        }
     
   function getListOfAllMonths() {
         var currentDate = moment();

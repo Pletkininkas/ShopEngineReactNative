@@ -79,27 +79,54 @@ export function DrawerContent(props) {
     function calculateSavings(receipt){
         var sum = 0;
         receipt.receiptProducts.forEach(product => {
-            var result = getMaxPrice(product);
+            var result = getAvgPrice(product);
             if(result > product.price) {
                 sum+=result - product.price;
-            }  
+            }
         });
         return sum;
     }
 
-    function getMaxPrice(item){
-        var maxPrice = Number.NEGATIVE_INFINITY;
-        var product = products.find(x => x.name == item.name);
-        if(product != undefined){
-            var amount = item.price / item.pricePerQuantity;
-            for(var shop in product.shopPrices){
-                var price = product.shopPrices[shop] * amount;
-                if(price > maxPrice) maxPrice = price;
+    // function getMaxPrice(item){
+    //     var maxPrice = Number.NEGATIVE_INFINITY;
+    //     var product = products.find(x => x.name == item.name);
+    //     if(product != undefined){
+    //         var amount = item.price / item.pricePerQuantity;
+    //         for(var shop in product.shopPrices){
+    //             var price = product.shopPrices[shop] * amount;
+    //             if(price > maxPrice) maxPrice = price;
+    //         }
+    //     }
+    //     if(maxPrice == Number.NEGATIVE_INFINITY) maxPrice = 0;
+    //     return maxPrice;
+    // }
+
+        function getAvgPrice(item){
+                var sum = 0;
+                var counter = 0; 
+                var amount = 0;
+                var product = products.find(x => x.name == item.name);
+                if(product != undefined){
+                    if(item.pricePerQuantity > 0) amount = item.price / item.pricePerQuantity;
+                    else amount = 1;
+                  for(var shop in product.shopPrices){
+                    var price = product.shopPrices[shop] * amount;
+                    sum += price;
+                    counter++;
+                  }
+                }
+                return calculateAverage(sum, counter);
+              }
+
+        function calculateAverage(numerator, denominator) {
+            if (denominator === 0 || isNaN(denominator)) {
+                  return 0;
             }
-        }
-        if(maxPrice == Number.NEGATIVE_INFINITY) maxPrice = 0;
-        return maxPrice;
-    }
+            else {
+                  return Math.round((numerator / denominator)*100)/100;
+            }
+          }
+    
 
     React.useEffect(() => {
         _setProfileImageStorage();
