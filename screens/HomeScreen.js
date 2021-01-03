@@ -26,27 +26,26 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate("NewList");
     }
 
-    return (
-      <View style={styles().containerm}>
-        <View style={styles().body}>
-          <View style={screenStyle.root}>
-            <View style={screenStyle.body}>
-              <View style={screenStyle.headline}>
-                <ImageBackground
-                  source={require("../assets/profile_bg.jpg")}
-                  resizeMode="cover"
-                  style={screenStyle.image}
-                  imageStyle={screenStyle.image_imageStyle}
-                >
-                  <View style={screenStyle.overlay}>
-                    <Text style={[screenStyle.scienceChannel, {alignSelf: 'flex-start', marginLeft: 26}]}>Hi, {user.username}!</Text>
-                    <Text style={[screenStyle.scienceChannel, {marginTop: 50}]}>These are your shopping lists!</Text>
-                  </View>
-                </ImageBackground>
-              </View>
-            </View>
-          </View>
-          <SafeAreaView style={{color:"#ccc", marginTop: 60, flex: 2}}>
+    const renderListText = () => {
+      return (
+        <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', marginTop: 20, fontSize: 20, color: textColor}]}>
+          {lists.shoppingLists.length == 0 ? "You don't have any shopping lists." : "These are your shopping lists:"}
+        </Text>
+      )
+    }
+
+    const renderShoppingLists = () => {
+      if(lists.shoppingLists.length == 0){
+          return (
+            <TouchableOpacity 
+              style={[screenStyle.button]}
+              onPress={() => navigation.navigate('NewList')}>
+              <Text style={{fontSize: 16, margin: 10, marginLeft: '5%', color: textColor}}>Create New Shopping List</Text>
+            </TouchableOpacity>
+          );
+      }else{
+        return (
+          <SafeAreaView style={{color:"#ccc"}}>
             <SwipeListView style={{width:'100%'}}
               disableRightSwipe
               data={lists.shoppingLists}
@@ -71,37 +70,61 @@ const HomeScreen = ({ navigation }) => {
               rightOpenValue={-75}
             />
           </SafeAreaView>
+        )
+      }
+    }
+    return (
+      <View style={styles().containerm}>
+        <View style={styles().body}>
+          <View style={screenStyle.body}>
+            <View style={screenStyle.headline}>
+              <ImageBackground
+                source={require("../assets/profile_bg.jpg")}
+                resizeMode="cover"
+                style={screenStyle.image}
+                imageStyle={screenStyle.image_imageStyle}
+              >
+                <View style={screenStyle.overlay}>
+                  <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', fontWeight: 'bold', color: textColor}]}>Hi, {user.username}!</Text>
+                  {renderListText()}
+                </View>
+              </ImageBackground>
+            </View>
+            <View style={{flex: 4}}>
+              {renderShoppingLists()}
+            </View>
+          </View>
         </View>
       </View>
     );
 };
 
-
-
 export default HomeScreen;
 
 const screenStyle = StyleSheet.create({
   root: {
-    flex: 1,
-    backgroundColor: "rgb(255,255,255)",
     borderRadius: 10
   },
   body: {
     flex: 1
   },
   headline: {
-    height: 246,
+    flex: 1,
+    height: 160,
     overflow: "hidden",
     borderRadius: 10,
     elevation: 5,
+    margin: 10,
+    marginBottom: 5
   },
   image: {
     flex: 1,
     borderRadius: 10
   },
-  image_imageStyle: {},
+  image_imageStyle: {
+  },
   overlay: {
-    backgroundColor: "rgba(30,26,26,0.4)",
+    backgroundColor: "rgba(30,26,26,0.1)",
     flex: 1
   },
   scienceChannel: {
@@ -121,11 +144,23 @@ const screenStyle = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    margin: 10
+    margin: 10,
+    marginLeft: '10%',
+    marginRight: '10%'
   },
   divider: {
     flexDirection: 'row',
     justifyContent: 'space-between'
+  },
+  button:{
+    width: "60%",
+    margin: 10,
+    height: 40,
+    alignItems: 'center',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#1db954",
+    borderRadius: 10,
   },
   leftText: {
     alignSelf: 'center'

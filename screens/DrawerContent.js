@@ -160,7 +160,7 @@ export function DrawerContent(props) {
 
     const returnUpdatedDrawer = (props) => {
         return(
-            <ImageBackground style={styles.userInfoSection} source={require('../assets/profile_bg.jpg')}>
+            <ImageBackground style={styles.userInfoSection} source={require("../assets/profile_bg.jpg")}>
                 <View style={{flexDirection: 'row', marginTop: 15}}>
                     <TouchableOpacity style={{width: 75, height: 75}} onPress={() => {props.navigation.navigate('Profile')}}>
                     <Image style={{width: 75, height: 75, borderRadius: 63, borderWidth: 2, borderColor: "white"}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
@@ -189,7 +189,7 @@ export function DrawerContent(props) {
             <DrawerContentScrollView { ... props}>
                 <View style={styles.drawerContent}>
                     { updateDrawer ? returnUpdatedDrawer(props) :
-                        <View style={styles.userInfoSection}>
+                        <ImageBackground style={styles.userInfoSection} source={require("../assets/profile_bg.jpg")}>
                             <View style={{flexDirection: 'row', marginTop: 15}}>
                                 <Icon
                                 name="ios-person"
@@ -210,7 +210,7 @@ export function DrawerContent(props) {
                                     <Caption style={styles.caption, {marginLeft: 15}}>Total Receipts Scanned</Caption>
                                 </View>
                             </View>
-                        </View>
+                        </ImageBackground>
                     }
 
                     <Drawer.Section style={styles.drawerSection}>

@@ -228,7 +228,7 @@ const ShoppingHistoryScreen = () => {
                 { user.receiptCount == 0 ?
                 
                 <View style={{alignItems: 'center', margin: 30}}>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontSize: 22}}>Could not find any receipt!</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontSize: 22}}>Could not find any receipts!</Text>
                 </View>
                 
                 : renderShoppingHistory()}

@@ -5,5 +5,6 @@ export default {
         configuringItem: 'configuringItem',
         optimizingList: 'optimizingList',
         comparingOptimizedList: 'comparingOptimizedList',
+        loading: 'loading'
     },
   };
