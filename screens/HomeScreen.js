@@ -15,7 +15,7 @@ const screenWidth = Dimensions.get('window').width
 const HomeScreen = ({ navigation }) => {
     
     const theme = useTheme();
-    const textColor = theme.dark ? '#fff' : '#000';
+    const textColor = theme.dark ? '#fff' : '#363636';
     const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
     const lists = useContext(ShoppingListContext);
     const [data, setData] = useState([]);
