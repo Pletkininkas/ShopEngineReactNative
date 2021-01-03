@@ -24,7 +24,7 @@ const NewListScreen = ({navigation}) => {
   const [onlyReplaceUnspecifiedShops, setOnlyReplaceUnspecifiedShops] = useState(false);
   const [chosenShops, setChosenShops] = useState([]);
   const [listShops, setListShops] = useState([]);
-  const [listName, setListName] = useState("New Shopping List");
+  const [listName, setListName] = useState("");
   const [searchText, setSearchText] = useState("");
 
   const theme = useTheme();
@@ -68,11 +68,9 @@ const NewListScreen = ({navigation}) => {
     if(listsContext.currentList != undefined && listsContext.currentList != null){
       setShoppingList(listsContext.currentList.items);
       setListName(listsContext.currentList.name);
-      console.log("hello 2?");
     }else{
       setShoppingList([]);
-      console.log("hello?");
-      setListName("New Shopping List");
+      setListName("");
     }
     
   }

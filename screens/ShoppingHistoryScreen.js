@@ -35,7 +35,7 @@ const ShoppingHistoryScreen = () => {
               return data.json();
             })
             .then(data => {
-              setReceipts(data.data);
+              setReceipts(data.data.reverse());
               setScreenLoading(false);
             })
             .catch(err => {
@@ -140,11 +140,11 @@ const ShoppingHistoryScreen = () => {
                 <View style={[contentStyles.modalItem, {backgroundColor: theme.dark ? colors.lightGrey : colors.white}]}>
                   <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Product: {item.name}</Text>
                   { item.discount != 0.00 ?
-                  (<View><Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Total price: {(item.price-item.discount).toFixed(2)}€</Text>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Price: {item.price}€</Text>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Discount: {item.discount}€</Text></View>)
+                  (<View><Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Price: {(item.price-item.discount).toFixed(2)}€</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Discount: {item.discount}€</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Total price: {item.price}€</Text></View>)
                   :
-                  (<Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Price: {item.price}€</Text>)
+                  (<Text style={{color: theme.dark ? colors.white : colors.dark, fontWeight: "bold"}}>Total price: {item.price}€</Text>)
                   }
                 </View>
               )}
@@ -189,7 +189,7 @@ const ShoppingHistoryScreen = () => {
           }
           user.receiptCount = user.receiptCount-1;
           user.receipt = dataWithoutRemoved;
-          setReceipts(dataWithoutRemoved);
+          setReceipts(dataWithoutRemoved.reverse());
           if (Platform.OS === 'android') {
             ToastAndroid.show('Receipt has been deleted!', ToastAndroid.SHORT)
           } else {
@@ -228,7 +228,7 @@ const ShoppingHistoryScreen = () => {
                 { user.receiptCount == 0 ?
                 
                 <View style={{alignItems: 'center', margin: 30}}>
-                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontSize: 22}}>Could not find any receipts!</Text>
+                  <Text style={{color: theme.dark ? colors.white : colors.dark, fontSize: 22}}>Could not find any receipt!</Text>
                 </View>
                 
                 : renderShoppingHistory()}
