@@ -27,6 +27,9 @@ const ScanScreen = ({ navigation }) => {
     const[screenState, setScreenState] = useState(State.ScreenState.pickingPhotoMethod)
 
     const theme = useTheme();
+    const textColor = theme.dark ? '#fff' : '#000';
+    const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
+
     const faceUri = Asset.fromModule(require('../../assets/sadface.png')).uri;
     const whiteFaceUri = Asset.fromModule(require('../../assets/sadfacewhite.png')).uri;
     const shops = [
@@ -55,7 +58,12 @@ const ScanScreen = ({ navigation }) => {
     const _takePhotoAsync = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA)
         if (status === 'granted') {
-            const result = await ImagePicker.launchCameraAsync()
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                base64: true,
+                allowsEditing: true,
+                quality: 1,
+              });
 
             if (!result.cancelled) {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
@@ -74,7 +82,12 @@ const ScanScreen = ({ navigation }) => {
     const _pickPhotoAsync = async () => {
         const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL)
         if (status === 'granted') {
-            const result = await ImagePicker.launchImageLibraryAsync()
+            const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                base64: true,
+                allowsEditing: true,
+                quality: 1,
+              });
 
             if (!result.cancelled) {
                 // non-cropped photo taken, now we need to scan the shop and then proceed to crop the products    
@@ -90,10 +103,10 @@ const ScanScreen = ({ navigation }) => {
         }
     };
 
-    const _onShopConfirmPress = () =>
+    const _onShopConfirmPress = async () =>
     {
         if(shop != ''){
-            setScreenState(State.ScreenState.showCrop)
+            await _readImage(uri);
         }else{
             _showToast('Please select the shop')
         }
@@ -357,15 +370,15 @@ const ScanScreen = ({ navigation }) => {
                 return (
                     <View style={styles.container}>
                         <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                        <SwipeListView style={{width:'100%', marginBottom:80}}
+                        <SwipeListView style={{width:'100%', marginBottom:80, marginTop: 10}}
                         // extraData={state}
                             disableRightSwipe
                             data={scannedList}
                             keyExtractor={(item) => item.id}
                             renderItem={({item}) => (
-                                    <View style={styles.productItem}>
-                                        <Text style={{fontWeight:'bold', marginRight:5, flex:6}}>{item.name}</Text>
-                                        <Text style={{marginLeft:'auto', flex:2}}>{item.price.toFixed(2)} €</Text>
+                                    <View style={[styles.productItem, {backgroundColor: itemColor}]}>
+                                        <Text style={{fontWeight:'bold', marginRight:5, flex:6, color: textColor}}>{item.name}</Text>
+                                        <Text style={{marginLeft:'auto', flex:2, color: textColor}}>{item.price.toFixed(2)} €</Text>
                                         <Text style={{marginLeft:'auto', color:'green', flex:2}}>{item.discount != 0 ? item.discount.toFixed(2) + '€' : ''}</Text>
                                     </View>
                             )}
@@ -393,14 +406,14 @@ const ScanScreen = ({ navigation }) => {
             return(
                 <View style={styles.container}>
                     <View style={[styles.body, {alignItems:'center',justifyContent:'center'}]}  backgroundColor={theme.dark ? '#1c1c1c' : '#fff'}>
-                    <FlatList style={{width:'100%', marginBottom:80}}
+                    <FlatList style={{width:'100%', marginBottom:80, marginTop: 10}}
                        // extraData={state}
                         data={compareList}
                         keyExtractor={(item) => item.id}
                         renderItem={({item}) => (
-                            <View style={[styles.productItem, {alignItems:'center', justifyContent:'center'}]}>
-                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'normal',color:'black'}}>{item.worsePrice.toFixed(2)} €</Text></Text>
-                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:3, fontWeight:'bold'}}><Text style={{fontWeight:'bold',color:'green'}}>{(item.price - item.worsePrice).toFixed(2)} €</Text>   in</Text>
+                            <View style={[styles.productItem, {backgroundColor: itemColor, alignItems:'center', justifyContent:'center'}]}>
+                                <Text style={{fontWeight:'bold', textAlignVertical:'center', marginRight:5, flex:6, color: textColor}}>{item.name}{'\n'}{'\n'}<Text style={{fontWeight:'normal', color: textColor}}>{item.worsePrice.toFixed(2)} €</Text></Text>
+                                <Text style={{marginLeft:'auto', textAlignVertical:'center' ,flex:3, fontWeight:'bold', color: textColor}}><Text style={{fontWeight:'bold',color:'green'}}>{(item.price - item.worsePrice).toFixed(2)} €</Text>   in</Text>
                                 <Image style={{marginLeft:'auto', flex:2, width:40, height:40, resizeMode:'contain'}} resizeMethod="resize" source={{uri:shops[getShopId(item.shop)-1].uri}} />
                             </View>
                         )}
@@ -463,4 +476,11 @@ const ScanScreen = ({ navigation }) => {
     }
 
 }
+
+const colors = {
+    white: "#FFFFFF",
+    lightGrey: "#242424",
+    dark: "#1c1c1c",
+  };
+
 export default ScanScreen;

@@ -190,11 +190,10 @@ export function DrawerContent(props) {
                 <View style={styles.drawerContent}>
                     { updateDrawer ? returnUpdatedDrawer(props) :
                         <ImageBackground style={styles.userInfoSection} source={require("../assets/profile_bg.jpg")}>
-                            <View style={{flexDirection: 'row', marginTop: 15}}>
-                                <Icon
-                                name="ios-person"
-                                size={75}                            
-                                color={configColors.primary}/>
+                        <View style={{flexDirection: 'row', marginTop: 15}}>
+                            <TouchableOpacity style={{width: 75, height: 75}} onPress={() => {props.navigation.navigate('Profile')}}>
+                            <Image style={{width: 75, height: 75, borderRadius: 63, borderWidth: 2, borderColor: "white"}} source={{uri: `data:image/jpg;base64,${encodedBase64}`}}/>
+                            </TouchableOpacity>
                                 <View style={{flexDirection: 'column', marginTop: 15, marginLeft: 20, flexWrap: "wrap"}}>
                                     <Title style={styles.title}>{user.username}</Title>
                                     <Caption style={styles.caption}>User</Caption>

@@ -6,7 +6,7 @@ import {SwipeListView} from 'react-native-swipe-list-view'
 import styles from '../config/styles';
 import {ShoppingListContext} from '../components/context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { user } from '../config';
+import config, { user } from '../config';
 
 const HomeScreen = ({ navigation }) => {
     
@@ -33,7 +33,7 @@ const HomeScreen = ({ navigation }) => {
         </Text>
       )
     }
-
+    
     const renderShoppingLists = () => {
       if(lists.shoppingLists.length == 0){
           return (

@@ -1,8 +1,7 @@
-import {API_URL} from '@env'
 import AsyncStorage from '@react-native-community/async-storage';
 
 export default {
-    API_URL
+    API_URL: "http://duffman-001-site1.ctempurl.com/"
 }
 
 export const user = {
