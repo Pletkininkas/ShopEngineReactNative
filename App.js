@@ -23,7 +23,7 @@ import StatisticsScreen from './screens/StatisticsScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
-import { AuthContext, ShoppingListContext } from './components/context';
+import { AuthContext, ShoppingListContext, ReceiptProductContext } from './components/context';
 
 import RootStackScreen from './screens/root/RootStackScreen'
 
@@ -38,6 +38,93 @@ const App = () => {
   const [shoppingLists, setShoppingLists] = React.useState([]);
   const [currentList, setCurrentList] = React.useState(null);
   const [screenIsWaiting, setScreenIsWaiting] = React.useState(false);
+  const [receiptList, setReceiptList] = React.useState([]);
+  const [productList, setProductList] = React.useState([]);
+  const updateReceipts = async () => {
+    try {
+      const sdd = await fetch(config.API_URL+'receipt', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + user.token
+        }
+      });
+      let data = await sdd.json();
+      const _data = data.data.reverse();
+      setReceiptList(_data);
+      calculateSavings(_data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  
+  useEffect(() => {
+    if (user.token != null || user.token != undefined)
+      updateReceipts();
+  }, [productList]);
+
+  const updateProducts = async () => {
+    try{
+      var response = fetch(config.API_URL+'product', {
+          method: 'GET',
+          headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+          }
+      });
+      var data = await response;
+      var products = await data.json();
+      setProductList(products.data);
+    }catch(err){
+        console.error(err);
+    }
+  }
+
+  function calculateSavings(_data) {
+    let saved = 0;
+    _data.forEach(element => {saved += _calculateSavings(element)});
+    user.receiptTotalSaved = saved;
+  }
+
+  function _calculateSavings(receipt){
+      var sum = 0;
+      receipt.receiptProducts.forEach(product => {
+          var result = getAvgPrice(product);
+          if(result > product.price) {
+              sum+=result - product.price;
+          }
+      });
+      return sum;
+  }
+
+  function getAvgPrice(item){
+    var sum = 0;
+    var counter = 0; 
+    var amount = 0;
+    var product;
+    if (productList != undefined)
+        product = productList.find(x => x.name == item.name);
+        if(product != undefined){
+          if(item.pricePerQuantity > 0) amount = item.price / item.pricePerQuantity;
+          else amount = 1;
+            for(var shop in product.shopPrices){
+              var price = product.shopPrices[shop] * amount;
+              sum += price;
+        counter++;
+      }
+    }
+      return calculateAverage(sum, counter);
+    }
+
+    function calculateAverage(numerator, denominator) {
+        if (denominator === 0 || isNaN(denominator)) {
+              return 0;
+        }
+        else {
+              return Math.round((numerator / denominator)*100)/100;
+        }
+      }
 
   useEffect(() => {
     loadShoppingLists();
@@ -80,7 +167,6 @@ const App = () => {
       if(Array.isArray(loaded)) setShoppingLists(loaded);
       else setShoppingLists([]);
     } catch(e) {
-      console.log("Failed to load:");
       console.log(e);
       setShoppingLists([]);
     }
@@ -161,6 +247,7 @@ const App = () => {
           await AsyncStorage.setItem('darkTheme', 'false');
           user.token = userToken;
           user.username = userName;
+          updateProducts();
         } catch(e) {
           Alert.alert(
             'Sign In - Error',
@@ -312,6 +399,7 @@ const App = () => {
         }
         user.userName = userName;
         setUser(userName, userToken);
+        updateProducts();
       } catch(e) {
         console.log(e);
       }
@@ -333,20 +421,22 @@ const App = () => {
         <StatusBar hidden={true} />
           <AuthContext.Provider value={authContext}>
             <ShoppingListContext.Provider value = {{shoppingLists: shoppingLists, currentList: currentList, setCurrentList: setCurrentList, setShoppingLists: setShoppingLists, saveLists: saveShoppingLists}}>
-              <NavigationContainer theme={theme}>
-                { loginState.userToken != null ? (
-                  <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
-                    <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
-                    <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
-                    <Drawer.Screen name="Statistics" component={StatisticsScreen} />
-                    <Drawer.Screen name="Profile" component={ProfileScreen} />
-                    <Drawer.Screen name="Settings" component={SettingsScreen} />
-                </Drawer.Navigator>
-                )
-              :
-                <RootStackScreen/>
-              }
-              </NavigationContainer>
+              <ReceiptProductContext.Provider value = {{receipts: receiptList, products: productList, updateReceipts: updateReceipts }}>
+                <NavigationContainer theme={theme}>
+                  { loginState.userToken != null ? (
+                    <Drawer.Navigator drawerContent={props => <DrawerContent {...props} />}>
+                      <Drawer.Screen name="HomeDrawer" component={MainTabScreen} />
+                      <Drawer.Screen name="ShoppingHistory" component={ShoppingHistoryScreen} />
+                      <Drawer.Screen name="Statistics" component={StatisticsScreen} />
+                      <Drawer.Screen name="Profile" component={ProfileScreen} />
+                      <Drawer.Screen name="Settings" component={SettingsScreen} />
+                  </Drawer.Navigator>
+                  )
+                :
+                  <RootStackScreen/>
+                }
+                </NavigationContainer>
+              </ReceiptProductContext.Provider>
             </ShoppingListContext.Provider>
           </AuthContext.Provider>
       </PaperProvider>

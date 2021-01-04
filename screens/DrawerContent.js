@@ -18,74 +18,22 @@ import {
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { AuthContext } from '../components/context';
-import config, { user, setReceiptHistory, drawer, defaultImages, setProfileImage } from '../config';
+import { AuthContext, ReceiptProductContext } from '../components/context';
+import config, { user, drawer, defaultImages, setProfileImage } from '../config';
 
 import configColors from '../config/colors';
 import AsyncStorage from '@react-native-community/async-storage';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useContext } from 'react';
 
 export function DrawerContent(props) {
     const paperTheme = useTheme();
     const { signOut, toggleTheme } = React.useContext(AuthContext);
     const [updateDrawer, setUpdateDrawer] = React.useState(drawer.update);
     const [encodedBase64, setEncodedBase64] = React.useState(user.profileImage);
+    const context = useContext(ReceiptProductContext);
 
-    var products;
-
-    async function fetchProducts(){
-        var _products = []
-        try{
-          var response = fetch(config.API_URL+'product', {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          }
-          });
-          var data = await response;
-          _products = await data.json();
-        }catch(err){
-          console.error(err);
-        }
-        products = _products.data;
-      }
-    
-    fetchProducts();
-
-    async function fetchUserData() {
-        fetch(config.API_URL+'receipt', {
-            method: 'GET',
-            headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + user.token
-            }
-        }).then(data => {
-            return data.json();
-            })
-            .then(data => {
-                let saved = 0;
-                data.data.forEach(element => {saved += calculateSavings(element)});
-                let receiptCount = Object(data.data).length;
-                setReceiptHistory(saved, receiptCount, data.data);
-                _saveReceiptHistory(saved, receiptCount, data.data);
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    }
-
-    function calculateSavings(receipt){
-        var sum = 0;
-        receipt.receiptProducts.forEach(product => {
-            var result = getAvgPrice(product);
-            if(result > product.price) {
-                sum+=result - product.price;
-            }
-        });
-        return sum;
-    }
+     
 
     // function getMaxPrice(item){
     //     var maxPrice = Number.NEGATIVE_INFINITY;
@@ -101,77 +49,10 @@ export function DrawerContent(props) {
     //     return maxPrice;
     // }
 
-        function getAvgPrice(item){
-                var sum = 0;
-                var counter = 0; 
-                var amount = 0;
-                var product = products.find(x => x.name == item.name);
-                if(product != undefined){
-                    if(item.pricePerQuantity > 0) amount = item.price / item.pricePerQuantity;
-                    else amount = 1;
-                  for(var shop in product.shopPrices){
-                    var price = product.shopPrices[shop] * amount;
-                    sum += price;
-                    counter++;
-                  }
-                }
-                return calculateAverage(sum, counter);
-              }
-
-        function calculateAverage(numerator, denominator) {
-            if (denominator === 0 || isNaN(denominator)) {
-                  return 0;
-            }
-            else {
-                  return Math.round((numerator / denominator)*100)/100;
-            }
-          }
-    
-
     React.useEffect(() => {
         _setProfileImageStorage();
-        _updateDrawerReceiptHistory();
         fetchUserProfileImage();
     }, [user.profileImage]);
-
-    React.useEffect(() => {
-        fetchUserData();
-        
-        const interval=setInterval(()=>{
-            fetchUserData()
-            },10000)
-                
-        return()=>clearInterval(interval)
-    }, [updateDrawer]);
-
-    const _saveReceiptHistory = async (totalSaved, receiptCount, receipt) => {
-        if (totalSaved != null) {
-            await AsyncStorage.setItem('userTotalSaved', totalSaved.toString());
-        }
-        if (receiptCount != null) {
-            await AsyncStorage.setItem('userReceiptCount', receiptCount.toString());
-        }
-        if (receipt != null) {
-            await AsyncStorage.setItem('userReceipt', JSON.stringify(receipt));
-        }
-    };
-
-    const _updateDrawerReceiptHistory = async () => {
-        try {
-            let userTotalSaved = await AsyncStorage.getItem('userTotalSaved');
-            
-            let userReceiptCount = await AsyncStorage.getItem('userReceiptCount');
-            let userReceipt = await AsyncStorage.getItem('userReceipt');
-            if (userTotalSaved != null && userReceiptCount != null && userReceipt != null) {
-                user.receiptTotalSaved = parseFloat(userTotalSaved);
-                user.receiptCount = parseInt(userReceiptCount);
-                user.receipt = JSON.parse(userReceipt);
-                setUpdateDrawer(true);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    };
 
     const _saveProfileImageStorage = async (imageBase64) => {
         try {
@@ -245,8 +126,8 @@ export function DrawerContent(props) {
                         <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
                     </View>
                     <View style={styles.section}>
-                        <Paragraph style={styles.paragraph, styles.caption}>{user.receiptCount}</Paragraph>
-                        <Caption style={styles.caption, {marginLeft: 15}}>Total Reciept Scanned</Caption>
+                        <Paragraph style={styles.paragraph, styles.caption}>{context.receipts.length}</Paragraph>
+                        <Caption style={styles.caption, {marginLeft: 15}}>Total Receipts Scanned</Caption>
                     </View>
                 </View>
             </ImageBackground>
@@ -274,7 +155,7 @@ export function DrawerContent(props) {
                                     <Caption style={styles.caption, {marginLeft: 15}}>Money saved</Caption>
                                 </View>
                                 <View style={styles.section}>
-                                    <Paragraph style={styles.paragraph, styles.caption}>{user.receiptCount}</Paragraph>
+                                    <Paragraph style={styles.paragraph, styles.caption}>{context.receipts.length}</Paragraph>
                                     <Caption style={styles.caption, {marginLeft: 15}}>Total Receipts Scanned</Caption>
                                 </View>
                             </View>

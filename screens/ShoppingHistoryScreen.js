@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image, ToastAndroid } from 'react-native';
 import { useTheme } from "@react-navigation/native";
 import styles from '../config/styles';
 import {SwipeListView} from 'react-native-swipe-list-view'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
+import { ReceiptProductContext } from '../components/context';
 
 import Modal from 'react-native-modal';
 import config, { user, drawer } from '../config';
@@ -13,8 +14,7 @@ const ShoppingHistoryScreen = () => {
     const [screenLoading, setScreenLoading] = React.useState(false);
     const [itemSelected, setItemSelected] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState({});
-    const [receipts, setReceipts] = React.useState(user.receipt);
-    const drawerUpdate = React.useState(drawer.update);
+    const context = useContext(ReceiptProductContext);
     const theme = useTheme();
 
     const displayReceipt = (item) => {
@@ -22,45 +22,13 @@ const ShoppingHistoryScreen = () => {
       setItemSelected(true);
     }
 
-    const fetchUserReceipts = () => {
-          let token = user.token;
-          fetch(config.API_URL+'receipt', {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            }
-          }).then(data => {
-              return data.json();
-            })
-            .then(data => {
-              setReceipts(data.data.reverse());
-              setScreenLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-            });
-    }
-
-    React.useEffect(() => {
-      fetchUserReceipts();
-
-      const interval=setInterval(()=>{
-        fetchUserReceipts();
-        setScreenLoading(false);
-        },10000);
-          
-        return()=>clearInterval(interval);
-    }, []);
-
     const renderShoppingHistory = () => {
       return (
         <SwipeListView
           disableRightSwipe
           decelerationRate='normal'
           showsVerticalScrollIndicator={false}
-          data={receipts}
+          data={context.receipts}
           renderItem={({item}) => (<View onPress={() => {}} style={[contentStyles.item, {backgroundColor: theme.dark ? colors.lightGrey : colors.white}]} >
             <View style={contentStyles.divider}>
               <View style={{flex: 1, flexDirection: "row"}}>
@@ -181,15 +149,10 @@ const ShoppingHistoryScreen = () => {
           'Authorization': 'Bearer ' + token
         }
       }).then((res) => {
-          const dataWithoutRemoved = receipts.filter((r) => {
+          const dataWithoutRemoved = context.receipts.filter((r) => {
             return r.id !== id
           });
-          if (dataWithoutRemoved.lenght == 0) {
-            user.receiptTotalSaved = 0.00;
-          }
-          user.receiptCount = user.receiptCount-1;
-          user.receipt = dataWithoutRemoved;
-          setReceipts(dataWithoutRemoved.reverse());
+          context.updateReceipts();
           if (Platform.OS === 'android') {
             ToastAndroid.show('Receipt has been deleted!', ToastAndroid.SHORT)
           } else {
@@ -225,7 +188,7 @@ const ShoppingHistoryScreen = () => {
             </View>
             <View style={styles().bodym}>  
               <SafeAreaView style={{color:"#ccc"}}>
-                { user.receiptCount == 0 ?
+                { context.receipts.lenght == 0 ?
                 
                 <View style={{alignItems: 'center', margin: 30}}>
                   <Text style={{color: theme.dark ? colors.white : colors.dark, fontSize: 22}}>Could not find any receipt!</Text>

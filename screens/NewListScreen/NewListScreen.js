@@ -41,6 +41,7 @@ const NewListScreen = ({navigation}) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
+      setListName("");
       listsContext.setCurrentList(null);
       setShoppingList([]);
       setSelectedItem(null);
@@ -60,11 +61,14 @@ const NewListScreen = ({navigation}) => {
       setSelectedShop(null);
       setChosenShops([]);
       setScreenState(viewingList);
+      //console.log(listsContext.currentList);
+      //console.log(listName);
     });
     return unsubscribe;
   }, [navigation]);
 
   useEffect(() => {
+    //console.log('Hmmm');
     editList();
   }, [listsContext.currentList]);
 
