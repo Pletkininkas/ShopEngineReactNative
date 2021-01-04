@@ -58,7 +58,6 @@ const HomeScreen = ({ navigation }) => {
       return shopsData;
     } 
 
-
     const updatedColorsData = () => {
       let tempData = [];
       data.forEach(e => {
@@ -67,7 +66,6 @@ const HomeScreen = ({ navigation }) => {
       });
       return tempData;
     }
-    
     const deleteList = (list) => {
       var removed = lists.shoppingLists.filter(x => x.name != list.name);
       lists.setShoppingLists(removed);
