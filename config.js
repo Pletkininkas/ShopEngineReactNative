@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-community/async-storage';
 
 export default {
-    API_URL: "http://duffman-001-site1.ctempurl.com/"
+    API_URL: "http://193c11c82307.ngrok.io/"
 }
 
 export const user = {
@@ -31,15 +31,12 @@ export const setUserPrefs = async (language, allowPushNotifications, automatical
     await AsyncStorage.setItem('optionAllowPushNotifications', allowPushNotifications.toString());
 };
 
-export const setReceiptHistory = (totalSaved, receiptCount, receipt) => {
+export const setReceiptHistory = (totalSaved, receiptCount) => {
     if (totalSaved != null) {
         user.receiptTotalSaved = totalSaved;
     }
     if (receiptCount != 0 || receiptCount != null) {
         user.receiptCount = receiptCount;
-    }
-    if (receipt != null) {
-        user.receipt = receipt;
     }
     drawer.updated = true;
 };
@@ -49,13 +46,8 @@ export const drawer = {
     updated: false
 }
 
-export const updateDrawer = (update) => {
-    if (update == true) {
-        drawer.update = true;
-        drawer.updated = false;
-    } else {
-        drawer.update = false;
-    }
+export const updateDrawer = () => {
+    drawer.update = !drawer.update;
 };
 
 export const setProfileImage = (imageBase64) => {

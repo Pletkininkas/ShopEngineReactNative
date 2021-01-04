@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import { LayoutAnimation, UIManager, ToastAndroid, FlatList, View, Text, Image, TouchableOpacity, Picker, Alert} from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -11,6 +11,7 @@ import config, { updateDrawer, user} from '../../config'
 import styles from './styles.js'
 import State from './state.js'
 import { ImageManipulator } from 'expo-image-crop'
+import { ReceiptProductContext } from '../../components/context'
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -25,6 +26,7 @@ const ScanScreen = ({ navigation }) => {
     const[compareList, setCompareList] = useState(null)
     const[isEmptyComparedList, setIsEmptyComparedList] = useState(false)
     const[screenState, setScreenState] = useState(State.ScreenState.pickingPhotoMethod)
+    const context = useContext(ReceiptProductContext);
 
     const theme = useTheme();
     const textColor = theme.dark ? '#fff' : '#000';
@@ -119,7 +121,6 @@ const ScanScreen = ({ navigation }) => {
         } else {
             Alert.alert(message);
         }
-        updateDrawer(true);
     }
 
     const _readImage = async (pUri) =>{
@@ -195,7 +196,8 @@ const ScanScreen = ({ navigation }) => {
         setScreenState(State.ScreenState.showLoading);
         let products = await _convertProductsList();
         await _saveToHistoryAsync(products);
-        _showToast("Receipt has been saved")
+        _showToast("Receipt has been saved");
+        context.updateReceipts();
     }
 
     const _convertProductsList = async () =>

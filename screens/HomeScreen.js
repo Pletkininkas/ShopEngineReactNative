@@ -1,14 +1,15 @@
 import React, {useState, useEffect, useContext } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, ImageBackground} from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import {SwipeListView} from 'react-native-swipe-list-view'
 
 import styles from '../config/styles';
-import {ShoppingListContext} from '../components/context';
+import { ShoppingListContext, ReceiptProductContext } from '../components/context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import config, { user } from '../config';
 import { PieChart } from 'react-native-chart-kit'
 import { Dimensions } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler';
 const screenWidth = Dimensions.get('window').width
 
 
@@ -18,37 +19,12 @@ const HomeScreen = ({ navigation }) => {
     const textColor = theme.dark ? '#fff' : '#363636';
     const itemColor = theme.dark ? '#3d3d3d' : '#f2fcf6';
     const lists = useContext(ShoppingListContext);
-    const [data, setData] = useState([]);
+    const receiptsContext = useContext(ReceiptProductContext);
+    const [data, setData] = useState();
 
     useEffect(() => {
-      const unsubscribe = navigation.addListener('focus', () => {
-          fetchUserReceipts();
-          
-      });
-
-      return unsubscribe;
-  }, [navigation]);
-
-
-    const fetchUserReceipts = () => {
-      let token = user.token;
-      fetch(config.API_URL+'receipt', {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + token
-        }
-      }).then(data => {
-          return data.json();
-        })
-        .then(data => {
-          setData(prepareData(data.data));
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    }
+      setData(prepareData(receiptsContext.receipts));
+    }, [receiptsContext.updateReceipts]);
 
     const prepareData = (fetchedData) => {
       let shopsData = [
@@ -82,6 +58,16 @@ const HomeScreen = ({ navigation }) => {
       return shopsData;
     } 
 
+
+    const updatedColorsData = () => {
+      let tempData = [];
+      data.forEach(e => {
+        e.legendFontColor = textColor;
+        tempData.push(e);
+      });
+      return tempData;
+    }
+    
     const deleteList = (list) => {
       var removed = lists.shoppingLists.filter(x => x.name != list.name);
       lists.setShoppingLists(removed);
@@ -102,9 +88,15 @@ const HomeScreen = ({ navigation }) => {
     }
 
     const renderPie = () => {
-      return (
-        <PieChart
-          data={data}
+      if (data == null || data == undefined) {
+        return (
+          <View style={{alignItems: 'center', justifyContent: 'center', marginTop:40}}>
+            <Image style={{width:128, height:128}} source={require('../assets/loading.gif')}/>
+          </View>
+        );
+      } else {
+        return (<PieChart
+          data={updatedColorsData()}
           width={screenWidth-40}
           height={220}
           chartConfig={{
@@ -120,8 +112,8 @@ const HomeScreen = ({ navigation }) => {
           accessor="count"
           backgroundColor="transparent"
           paddingLeft="15"
-        />
-      )
+        />);
+      }
     }
     
     const renderShoppingLists = () => {
@@ -138,6 +130,7 @@ const HomeScreen = ({ navigation }) => {
           <SafeAreaView style={{color:"#ccc"}}>
             <SwipeListView style={{width:'100%'}}
               disableRightSwipe
+              scrollEnabled={false}
               data={lists.shoppingLists}
               keyExtractor={(item) => item.name}
               renderItem={({item}) => (
@@ -166,19 +159,26 @@ const HomeScreen = ({ navigation }) => {
     return (
       <View style={styles().containerm}>
         <View style={styles().body}>
-          <View style={screenStyle.body}>
-            <View style={screenStyle.headline} backgroundColor = {theme.dark ? '#1c1c1c' : "white"} >
-                <View style={screenStyle.overlay}>
-                  <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', fontWeight: 'bold', color: textColor}]}>Hi, {user.username}!</Text>
-                  <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', color: textColor}]}>Your favorite shops</Text>
-                  {renderPie()}
+          <ScrollView>
+            <View style={screenStyle.body}>
+              <View style={screenStyle.headline} backgroundColor = {theme.dark ? '#1c1c1c' : "white"} >
+                  <View style={screenStyle.overlay}>
+                    <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', fontWeight: 'bold', color: textColor}]}>Hi, {user.username}!</Text>
+                    <Text style={[screenStyle.scienceChannel, {alignSelf: 'center', color: textColor}]}>Your Favorite Shops</Text>
+                    {renderPie()}
+                    <TouchableOpacity
+                      style={[screenStyle.button, {alignSelf: 'flex-end', width: '40%'}]}
+                      onPress={() => navigation.navigate('Statistics')}>
+                      <Text style={{fontSize: 16, margin: 10, marginLeft: '5%', color: textColor}}>See more...</Text>
+                    </TouchableOpacity>
+                </View>
+              </View>
+              {renderListText()}
+              <View style={{flex:4}}>
+                {renderShoppingLists()}
               </View>
             </View>
-            {renderListText()}
-            <View style={{flex:4}}>
-              {renderShoppingLists()}
-            </View>
-          </View>
+          </ScrollView>
         </View>
       </View>
     );
@@ -194,7 +194,7 @@ const screenStyle = StyleSheet.create({
     flex: 1
   },
   headline: {
-    flex:7,
+    flex:8,
     overflow: "hidden",
     borderRadius: 10,
     elevation: 5,
