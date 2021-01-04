@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-community/async-storage';
 
 export default {
-    API_URL: "http://193c11c82307.ngrok.io/"
+    API_URL: "http://duffman-001-site1.ctempurl.com/"
 }
 
 export const user = {
